@@ -1,0 +1,16 @@
+nClasses = 43
+total samples = 39207
+nTrainSamples = 31367
+nTestSamples = 3920
+nValidateSamples = 3920
+
+shape of Xtrain = (31367, 28, 28, 3)
+shape of Ytrain = (31367,)
+
+shape of Xtest = (3919, 28, 28, 3)
+shape of Ytest = (3919,)
+
+shape of Xvalidate = (3919, 28, 28, 3)
+shape of Yvalidate = (3919,)
+
+File created on 2019-01-19 08:30:04
