@@ -54,6 +54,14 @@ def custAcc(y_true,y_pred):
     l = tf.where(diff<0.5,ones,zeros)
     return tf.reduce_mean(l)
 
+def accAcc(y_true, y_pred):
+    maxesPred = tf.argmax(y_pred,axis=1)
+    inds = tf.argmax(y_true,axis=1)
+    diff = tf.cast(tf.abs(inds-maxesPred),dtype='float64')
+    ones = tf.ones_like(diff,dtype='float64')
+    zeros= tf.zeros_like(diff,dtype='float64')
+    l = tf.where(diff!=0,ones,zeros)
+    return tf.reduce_mean(l)
 
 # The previous RA should be given as a command line input
 if len(sys.argv) > 2:
@@ -104,7 +112,8 @@ if len(sys.argv) > 2:
     bayes_model = PosteriorModel("Posteriors/VOGN_HCAS_BNN_%s_%s"%(pra, tau))
     y_pred = bayes_model.predict(X_train)
     acc = custAcc(y_train, y_pred)
-    print("Model Accuracy: ", acc)
+    aacc = accAcc(y_train, y_pred)
+    print("Model Accuracy: ", acc, aacc)
     """
     # Use Keras to define our model
     WIDTH = 128

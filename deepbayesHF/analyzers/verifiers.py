@@ -66,12 +66,12 @@ def propagate_interval_exact(W, b, x_l, x_u, marg=0, b_marg=0):
 
 
 def IBP(model, inp, weights, eps, predict=False):
-    if(predict == False):
-        h_u = tf.clip_by_value(tf.math.add(inp, eps), 0.0, 1.0)
-        h_l = tf.clip_by_value(tf.math.subtract(inp, eps), 0.0, 1.0)
-    else:
-        h_u = inp + eps
-        h_l = inp - eps
+    #if(predict == False):
+    #    h_u = tf.clip_by_value(tf.math.add(inp, eps), 0.0, 1.0)
+    #    h_l = tf.clip_by_value(tf.math.subtract(inp, eps), 0.0, 1.0)
+    #else:
+    h_u = inp + eps
+    h_l = inp - eps
     layers = model.model.layers
     offset = 0
     for i in range(len(layers)):

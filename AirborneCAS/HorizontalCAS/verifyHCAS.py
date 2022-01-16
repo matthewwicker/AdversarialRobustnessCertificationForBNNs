@@ -5,14 +5,16 @@ import h5py
 import sys
 import os
 
+import tensorflow as tf
+from tensorflow.keras.models import *
+
+from tensorflow.keras.layers import *
 sys.path.append('../../')
 import deepbayesHF
-
-import tensorflow as tf
 from deepbayesHF import optimizers
 from deepbayesHF import PosteriorModel
-from tensorflow.keras.models import *
-from tensorflow.keras.layers import *
+from deepbayesHF.analyzers import prob_veri
+
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 
@@ -28,20 +30,6 @@ modelFiles = "./models/HCAS_rect_v%d_pra%d_tau%02d_%dHU.ckpt" # File format for 
 tbFiles = "./tensorboard/HCAS_rect_v%d_pra%d_tau%02d_%dHU"
 ##########################
 
-# Custom tensorflow session. Sets up training with either a cpu, gpu, or multiple gpus
-def get_session(gpu_ind,gpu_mem_frac=0.45):
-    """Create a session that dynamically allocates memory."""
-    if gpu_ind[0]>-1:
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(np.char.mod('%d', gpu_ind))
-        config = tf.ConfigProto(device_count = {'GPU': len(gpu_ind)})
-        config.gpu_options.per_process_gpu_memory_fraction = gpu_mem_frac
-        session = tf.Session(config=config)
-    else:
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-        session = tf.Session()
-    return session
-
 # Function to compute network accuracy given. However, this does not 
 # add the online costs that were used to generate the correct minimum cost index, so
 # these accuracies are only an estimate
@@ -54,6 +42,14 @@ def custAcc(y_true,y_pred):
     l = tf.where(diff<0.5,ones,zeros)
     return tf.reduce_mean(l)
 
+def accAcc(y_true, y_pred):
+    maxesPred = tf.argmax(y_pred,axis=1)
+    inds = tf.argmax(y_true,axis=1)
+    diff = tf.cast(tf.abs(inds-maxesPred),dtype='float64')
+    ones = tf.ones_like(diff,dtype='float64')
+    zeros= tf.zeros_like(diff,dtype='float64')
+    l = tf.where(diff!=0,ones,zeros)
+    return tf.reduce_mean(l)
 
 # The previous RA should be given as a command line input
 if len(sys.argv) > 2:
@@ -79,33 +75,53 @@ if len(sys.argv) > 2:
     mins = np.array(f['min_inputs'])
     maxes = np.array(f['max_inputs'])
 
-
     min_inputs      = ",".join(np.char.mod('%f', mins))
     max_inputs     = ",".join(np.char.mod('%f', maxes))
     means      = ",".join(np.char.mod('%f', means))
     ranges     = ",".join(np.char.mod('%f', ranges))
-    
+
     N,numInputs = X_train.shape
     N,numOut = Q.shape
-    print("Setting up Model")
 
-    # Asymmetric loss function
-    lossFactor = 40.0
-    def asymMSE(y_true, y_pred):
-        d = y_true-y_pred
-        maxes = tf.argmax(y_true,axis=1)
-        maxes_onehot = tf.one_hot(maxes,numOut)
-        others_onehot = maxes_onehot-1
-        d_opt = d*maxes_onehot 
-        d_sub = d*others_onehot
-        a = lossFactor*(numOut-1)*(tf.square(d_opt)+tf.abs(d_opt))
-        b = tf.square(d_opt)
-        c = lossFactor*(tf.square(d_sub)+tf.abs(d_sub))
-        d = tf.square(d_sub)
-        loss = tf.where(d_sub>0,c,d) + tf.where(d_opt>0,a,b)
-        return tf.reduce_mean(loss)
-    
-    bayes_model = PosteriorModel("Posteriors/VOGN_HCAS_BNN_%s_%s"%(pra, tau))
+    classes = tf.argmax(y_train,axis=1)
+    inputs = np.argwhere(classes == property)
 
 
-    EPSILON = 0.01
+    print("Setting up Verification")
+    print("Verifying %s of %s inputs"%(len(inputs), len(classes)))
+
+    for i in range(len(inputs)):
+        INDEX = inputs[i]
+
+        bayes_model = PosteriorModel("Posteriors/ROB_HCAS_BNN_%s_%s"%(pra, tau))
+        y_pred = bayes_model.predict(np.asarray([X_train[INDEX]]))
+        if(np.argmax(y_pred) != property):
+            print("misclassified")
+            continue
+        #skip = custAcc([y_train[INDEX]], y_pred)
+        #if(skip == 0):
+        #    print("initially misclassified")
+        #    continue # prob 0
+
+        TRUE_VALUE = property
+        def predicate_safe(iml, imu, ol, ou):
+            v1 = tf.one_hot(TRUE_VALUE, depth=numOut)
+            v2 = 1 - tf.one_hot(TRUE_VALUE, depth=numOut)
+            v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+            worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+            if(np.argmax(worst_case) == TRUE_VALUE):
+                return True
+            else:
+                return False
+
+        EPSILON = 0.025
+        MAXDEPTH = 3
+        SAMPLES = 3
+        MARGIN = 2.75
+        inp_upper = X_train[INDEX]+(EPSILON) #np.clip(np.asarray(X_train[INDEX]+(EPSILON)), -100000, 100000)
+        inp_lower = X_train[INDEX]-(EPSILON) #np.clip(np.asarray(X_train[INDEX]-(EPSILON)), -100000, 100000)
+
+        p_lower = prob_veri(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH)
+        print("Initial Safety Probability: ", p_lower)
+
+        #Save result to log files

@@ -30,7 +30,7 @@ def propagate_conv2d(W, b, x_l, x_u, marg=0, b_marg=0):
 
 def propagate_interval(W, b, x_l, x_u, marg=0, b_marg=0):
     marg = tf.divide(marg, 2)
-    b_marg = tf.divide(marg, 2)
+    b_marg = tf.divide(b_marg, 2)
     x_mu = tf.cast(tf.divide(tf.math.add(x_u, x_l), 2), dtype=tf.float64)
     x_r =  tf.cast(tf.divide(tf.math.subtract(x_u, x_l), 2), dtype=tf.float64)
     W_mu = tf.cast(W, dtype=tf.float64)

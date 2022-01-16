@@ -94,6 +94,8 @@ class VariationalOnlineGuassNewton(optimizer.Optimizer):
                     zeros[np.abs(diff_above) <= np.abs(diff_below)] = logit_l[np.abs(diff_above) <= np.abs(diff_below)]
                     worst_case = zeros
 
+                print(type(worst_case), worst_case)
+                worst_case = np.asarray(worst_case)
                 worst_case = self.model.layers[-1].activation(worst_case)
                 output = (self.robust_lambda * predictions) + ((1-self.robust_lambda) * worst_case)
                 loss =  self.loss_func(labels, output)
@@ -111,14 +113,35 @@ class VariationalOnlineGuassNewton(optimizer.Optimizer):
                 for _mc_ in range(self.loss_monte_carlo):
                     eps = self.eps_dist.sample()
                     logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, eps=eps)
-                    v1 = tf.one_hot(labels, depth=10)
-                    v2 = 1 - tf.one_hot(labels, depth=10)
+                    logit_l = tf.cast(logit_l, dtype=tf.float32)
+                    logit_u = tf.cast(logit_u, dtype=tf.float32)
+                    v1 = tf.one_hot(labels, depth=5)
+                    v2 = 1 - tf.one_hot(labels, depth=5)
                     v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+                    v1 = tf.cast(v1, dtype=tf.float32); v2 = tf.cast(v2,dtype=tf.float32)
                     worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
                     worst_case = self.model.layers[-1].activation(worst_case)
                     one_hot_cls = tf.one_hot(labels, depth=10)
                     output += (1.0/self.loss_monte_carlo) * worst_case
                 loss = self.loss_func(labels, output)
+
+            elif(int(self.robust_train) == 5):
+                output = tf.zeros(predictions.shape)
+                self.epsilon = max(0.0001, self.epsilon)
+                #eps = self.eps_dist.sample()
+                logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, eps=self.epsilon)
+                logit_l = tf.cast(logit_l, dtype=tf.float32)
+                logit_u = tf.cast(logit_u, dtype=tf.float32)
+                v1 = tf.one_hot(labels, depth=self.classes)
+                v2 = 1 - tf.one_hot(labels, depth=self.classes)
+                v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+                v1 = tf.cast(v1, dtype=tf.float32); v2 = tf.cast(v2,dtype=tf.float32)
+                worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
+                worst_case = self.model.layers[-1].activation(worst_case)
+                one_hot_cls = tf.one_hot(labels, depth=5)
+                output = worst_case
+                loss = self.loss_func(labels, output)
+
 
             elif(int(self.robust_train) == 4):
                 output = tf.zeros(predictions.shape)

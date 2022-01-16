@@ -138,25 +138,25 @@ class Optimizer(ABC):
     def model_validate(self, features, labels):
         #self.model.set_weights(self.sample())
         predictions = self.model(features)
-        if(self.robust_train == 1): # We only check with IBP if we need to 
+        if(self.robust_train == 1 or self.robust_train == 5): # We only check with IBP if we need to 
             logit_l, logit_u = analyzers.IBP(self, features, self.model.get_weights(), self.epsilon)
             #logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, 0.0)
-            try:
-                v1 = tf.one_hot(labels, depth=self.classes); v1 = tf.cast(v1, dtype=tf.float32)
-                v2 = 1 - tf.one_hot(labels, depth=self.classes); v2 = tf.cast(v2, dtype=tf.float32)
-                logit_l, logit_u = tf.cast(logit_l, dtype=tf.float32), tf.cast(logit_u, dtype=tf.float32) 
-                worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
-                worst_case = self.model.layers[-1].activation(worst_case)
-            except:
-                logit_l, logit_u = tf.cast(logit_l, dtype=tf.float32), tf.cast(logit_u, dtype=tf.float32) 
-                diff_above = logit_u - labels
-                diff_below = logit_l - labels
-                logit_l = np.asarray(logit_l)
-                logit_u = np.asarray(logit_u)
-                zeros = 0.0* logit_l
-                zeros[np.abs(diff_above) > np.abs(diff_below)] = logit_u[np.abs(diff_above) > np.abs(diff_below)]
-                zeros[np.abs(diff_above) <= np.abs(diff_below)] = logit_l[np.abs(diff_above) <= np.abs(diff_below)]
-                worst_case = zeros
+            #try:
+            v1 = tf.one_hot(labels, depth=self.classes); v1 = tf.cast(v1, dtype=tf.float32)
+            v2 = 1 - tf.one_hot(labels, depth=self.classes); v2 = tf.cast(v2, dtype=tf.float32)
+            logit_l, logit_u = tf.cast(logit_l, dtype=tf.float32), tf.cast(logit_u, dtype=tf.float32) 
+            worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
+            worst_case = self.model.layers[-1].activation(worst_case)
+            #except:
+            #    logit_l, logit_u = tf.cast(logit_l, dtype=tf.float32), tf.cast(logit_u, dtype=tf.float32) 
+            #    diff_above = logit_u - labels
+            #    diff_below = logit_l - labels
+            #    logit_l = np.asarray(logit_l)
+            #    logit_u = np.asarray(logit_u)
+            #    zeros = 0.0* logit_l
+            #    zeros[np.abs(diff_above) > np.abs(diff_below)] = logit_u[np.abs(diff_above) > np.abs(diff_below)]
+            #    zeros[np.abs(diff_above) <= np.abs(diff_below)] = logit_l[np.abs(diff_above) <= np.abs(diff_below)]
+            #    worst_case = zeros
             v_loss = self.loss_func(labels, predictions)
             self.extra_metric(labels, worst_case)
         elif(self.robust_train == 2):

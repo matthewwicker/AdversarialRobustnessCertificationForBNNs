@@ -1,5 +1,5 @@
 import numpy as np
-import theano
+#import theano
 import math
 import h5py
 import sys
@@ -21,7 +21,7 @@ ver = 4            # Neural network version
 hu = 45            # Number of hidden units in each hidden layer in network
 saveEvery = 10     # Epoch frequency of saving
 totalEpochs = 200  # Total number of training epochs
-trainingDataFiles = "./TrainingData/VertCAS_TrainingData_v2_%02d.h5" # File format for training data
+trainingDataFiles = "TrainingData/VertCAS_TrainingData_v2_%02d.h5" # File format for training data
 ##########################
 
 # The previous RA should be given as a command line input
@@ -56,20 +56,28 @@ if len(sys.argv) > 1:
         loss = tf.where(d_sub>0,c,d) + tf.where(d_opt>0,a,b)
         return tf.reduce_mean(loss)
 
+    N,numInputs = X_train.shape
+    N,numOut = Q.shape
+    X_train = tf.cast(X_train, dtype=tf.float32)
+    y_train = tf.argmax(y_train,axis=1)
+    print("Setting up Model")
 
-    # Define model architecture
+    loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    #loss = tf.keras.losses.CategoricalCrossentropy()
+    # Use Keras to define our model
+    WIDTH = 125
     model = Sequential()
-    model.add(Dense(100, activation='relu', input_dim=4))
-    model.add(Dense(numOut))
+    model.add(Dense(WIDTH, activation="relu", input_shape=(1, numInputs)))
+    model.add(Dense(numOut, activation="softmax"))
 
     # Use deepbayesHF to define our optimizer
     optimizer = optimizers.VOGN()
-    bayes_model = optimizer.compile(model, loss_fn=asymMSE, learning_rate = 0.001,
-                          epochs=75, batch_size=1024,
-                          inflate_prior=0.1, mode='regression') # select optimizer and set learning rate
-    #bayes_model.valid_metric = tf.keras.metrics.SparseCategoricalAccuracy(name="extra_acc")
-    #bayes_model.train_metric = tf.keras.metrics.SparseCategoricalAccuracy(name="extra_acc")
+    bayes_model = optimizer.compile(model, loss_fn=loss, learning_rate = 0.05,
+                          epochs=75, batch_size=1024, decay=0.1,
+                          # input_noise=0.05,
+                          robust_train = 5, epsilon=0.05, rob_lam=0.0, classes=9,
+                          inflate_prior=0.05, mode='classification') # select optimizer and set learning rate
 
     # Train and save BNN using deepbayesHF
     bayes_model.train(X_train, y_train, X_train, y_train)
-    bayes_model.save('Posteriors/VOGN_VCAS_BNN_%s'%(pra))
+    bayes_model.save('Posteriors/ROB_VCAS_BNN_%s'%(pra))
