@@ -2,6 +2,7 @@
 from .bayesbybackprop import BayesByBackprop
 from .noisyadam import NoisyAdam
 from .blrvi import VariationalOnlineGuassNewton
+from .blrvi import VariationalOnlineGuassNewton as VOGN
 from .sgd import StochasticGradientDescent
 from .swag import StochasticWeightAveragingGaussian
 from .hmc import HamiltonianMonteCarlo
