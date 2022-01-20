@@ -73,7 +73,7 @@ if len(sys.argv) > 1:
     # Use deepbayesHF to define our optimizer
     optimizer = optimizers.VOGN()
     bayes_model = optimizer.compile(model, loss_fn=loss, learning_rate = 0.05,
-                          epochs=75, batch_size=1024, decay=0.1,
+                          epochs=25, batch_size=1024, decay=0.1,
                           # input_noise=0.05,
                           robust_train = 5, epsilon=0.05, rob_lam=0.0, classes=9,
                           inflate_prior=0.05, mode='classification') # select optimizer and set learning rate

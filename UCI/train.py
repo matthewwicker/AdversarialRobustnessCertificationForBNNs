@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
+os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 
 # Stuff we made
 import deepbayesHF
@@ -22,39 +23,45 @@ args = parser.parse_args()
 dataset_string = args.dataset
 
 if(dataset_string == "kin8nm1"):
-    lr = 4.0; bs = 256; prior=0.01
-    epochs = 1500
+#    lr = 4.0; bs = 256; prior=0.01
+    lr = 0.025; bs = 32; prior=0.25
+    epochs = 500
 
 elif(dataset_string == "concrete1"):
-    lr = 1.5; bs = 256; prior=1.0
+    lr = 0.05; bs = 32; prior=0.25
     epochs = 2000
 
 elif(dataset_string == "boston1"):
-    lr = 2.25; bs = 256; prior=0.25
-    epochs = 3000
+    lr = 0.025; bs = 32; prior=0.25
+    epochs = 1500
 
 elif(dataset_string == "wine1"):
-    lr = 7.5; bs = 256; prior=0.05
+    #lr = 7.5; bs = 256; prior=0.05
+    lr = 0.0025; bs = 32; prior=0.25
     epochs = 1500
 
 elif(dataset_string == "powerplant1"):
-    lr = 15.0; bs = 256; prior=0.01
-    epochs = 1250
+    lr = 0.025; bs = 64; prior=0.25
+    epochs = 500
 
 
 elif(dataset_string == "naval1"):
-    lr = 5.0; bs = 256; prior=0.01
-    epochs = 1500
+    lr = 0.025; bs = 128; prior=0.25
+    #lr = 5.0; bs = 256; prior=0.01
+    epochs = 650
 
 
 elif(dataset_string == "energy1"):
-    lr = 1.25; bs = 256; prior=1.0
-    epochs = 2000
+    lr = 0.0075; bs = 32; prior=0.25
+    #lr = 1.25; bs = 256; prior=1.0
+    epochs = 1500
 
 
 elif(dataset_string == "yacht1"):
-    lr = 4.5; bs = 64; prior=0.01
-    epochs = 2750
+    lr = 0.0125; bs = 32; prior=0.25
+    #lr = 4.5; bs = 64; prior=0.01
+    epochs = 1500
+
 else:
     print("Dataset not found... exiting")
     sys.exit(0)
@@ -88,7 +95,7 @@ opt = optimizers.VariationalOnlineGuassNewton()
 
 # A small architecture means fast verification :-)
 model = Sequential()
-model.add(Dense(10, activation="tanh", input_shape=(1, in_dims)))
+model.add(Dense(32, activation="tanh", input_shape=(1, in_dims)))
 model.add(Dense(1, activation="linear"))
 
 if not os.path.exists('TrainingLogs'):
@@ -101,4 +108,4 @@ bayes_model = opt.compile(model, loss_fn=likelihood,
 
 bayes_model.train(X_train, y_train, X_test, y_test)
 
-bayes_model.save("PosteriorScaled/VOGN_%s_Model"%(dataset_string))
+bayes_model.save("IEEEPosterior/VOGN_%s_Model"%(dataset_string))
