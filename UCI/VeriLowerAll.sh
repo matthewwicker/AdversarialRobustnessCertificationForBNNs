@@ -8,5 +8,6 @@ do
     python3 lower.py --dataset naval1 --imnum $im &
     python3 lower.py --dataset energy1 --imnum $im &
     python3 lower.py --dataset yacht1 --imnum $im &
+    python3 lower.py --dataset boston1 --imnum $im &
     wait
 done

@@ -189,7 +189,7 @@ print("Radius: ", eps)
 
 import json
 iterations = 0
-record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "Max Epsilon":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
 with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
     json.dump(record, f)
     f.write(os.linesep)
