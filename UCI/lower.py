@@ -92,8 +92,8 @@ def predicate_safe(iml, imu, ol, ou):
 # We should do clipping, but its 4am now and I am lazy
 
 import json
-dir = "ExperimentalLogs"
-for eps in np.linspace(0.01, 0.1, 10):
+dir = "Logs"
+for eps in np.linspace(0.01, 0.2, 16):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
     img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])

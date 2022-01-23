@@ -134,6 +134,26 @@ class BayesByBackprop(optimizer.Optimizer):
                                                self.prior_mean, self.prior_var, 
                                                self.posterior_mean, self.posterior_var, 
                                                self.loss_func, self.kl_weight)
+
+
+            elif(int(self.robust_train) == 5):
+                output = tf.zeros(predictions.shape)
+                self.epsilon = max(0.0001, self.epsilon)
+                #eps = self.eps_dist.sample()
+                logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, eps=self.epsilon)
+                logit_l = tf.cast(logit_l, dtype=tf.float32)
+                logit_u = tf.cast(logit_u, dtype=tf.float32)
+                v1 = tf.one_hot(labels, depth=self.classes)
+                v2 = 1 - tf.one_hot(labels, depth=self.classes)
+                v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+                v1 = tf.cast(v1, dtype=tf.float32); v2 = tf.cast(v2,dtype=tf.float32)
+                worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
+                worst_case = self.model.layers[-1].activation(worst_case)
+                one_hot_cls = tf.one_hot(labels, depth=5)
+                output = worst_case
+                loss = self.loss_func(labels, output)
+
+
         # Get the gradients
         weight_gradient = tape.gradient(loss, self.model.trainable_variables)
         mean_gradient = tape.gradient(loss, self.posterior_mean)

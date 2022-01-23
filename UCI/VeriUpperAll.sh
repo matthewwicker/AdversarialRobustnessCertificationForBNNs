@@ -1,5 +1,5 @@
 # Author: Matthew Wicker
-for im in {0..250}
+for im in {0..350}
 do
     python3 upper.py --dataset kin8nm1 --imnum $im &
     python3 upper.py --dataset concrete1 --imnum $im &

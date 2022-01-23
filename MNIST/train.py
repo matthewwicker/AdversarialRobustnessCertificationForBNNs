@@ -20,7 +20,7 @@ from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 
 #tf.debugging.set_log_device_placement(True)
-#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -40,7 +40,7 @@ rob = int(args.rob)
 width = int(args.width)
 depth = int(args.depth)
 gpu = str(args.gpu)
-os.environ['CUDA_VISIBLE_DEVICES'] = gpu
+#os.environ['CUDA_VISIBLE_DEVICES'] = gpu
 
 (X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
 X_train = X_train/255.
@@ -58,13 +58,12 @@ model.add(Dense(10, activation="softmax"))
 inf = 2
 full_covar = False
 if(optim == 'VOGN'):
-    # was 0.25 for a bit
     inf = 2
     learning_rate = 0.35; decay=0.0
     opt = optimizers.VariationalOnlineGuassNewton()
 elif(optim == 'BBB'):
     inf = 10
-    learning_rate = 0.45; decay=0.0
+    learning_rate = 0.15; decay=0.0
     opt = optimizers.BayesByBackprop()
 elif(optim == 'SWAG'):
     learning_rate = 0.01; decay=0.0
@@ -93,7 +92,7 @@ loss = tf.keras.losses.SparseCategoricalCrossentropy()
 #elif(rob != 0):
 #    loss = deepbayesHF.optimizers.losses.robust_crossentropy_loss
 
-bayes_model = opt.compile(model, loss_fn=loss, epochs=20, learning_rate=learning_rate,
+bayes_model = opt.compile(model, loss_fn=loss, epochs=35, learning_rate=learning_rate,
                           batch_size=128, linear_schedule=True,
                           decay=decay, robust_train=rob, inflate_prior=inf,
                           burn_in=3, steps=25, b_steps=20, epsilon=eps, rob_lam=lam) #, preload="SGD_FCN_Posterior_1")
@@ -102,4 +101,4 @@ bayes_model = opt.compile(model, loss_fn=loss, epochs=20, learning_rate=learning
 bayes_model.train(X_train, y_train, X_test, y_test)
 
 # Save your approxiate Bayesian posterior
-bayes_model.save("Posteriors/%s_FCN_Posterior_%s_%s"%(optim, width, depth))
+bayes_model.save("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))

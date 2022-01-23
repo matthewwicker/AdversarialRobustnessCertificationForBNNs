@@ -18,21 +18,30 @@ from tensorflow.keras.layers import *
 import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--imnum")
-parser.add_argument("--infer")
-parser.add_argument("--width")
-parser.add_argument("--depth")
+parser.add_argument("--imnum", default=0.0)
+parser.add_argument("--eps", default=0.0)
+parser.add_argument("--lam", default=1.0)
+parser.add_argument("--rob", default=0)
+parser.add_argument("--gpu", nargs='?', default='0,1,2,3,4,5')
+parser.add_argument("--opt")
+parser.add_argument("--width", default=24)
+parser.add_argument("--depth", default=1)
+
 
 args = parser.parse_args()
 imnum = int(args.imnum)
+eps = float(args.eps)
+lam = float(args.lam)
+optim = str(args.opt)
+rob = int(args.rob)
 width = int(args.width)
 depth = int(args.depth)
-post_string = str(args.infer)
+post_string = str(args.opt)
 INDEX = imnum
 
 
-EPSILON = 0.025
-MARGIN = 3.0
+EPSILON = 0.05
+MARGIN = 3.1
 SAMPLES = 3
 MAXDEPTH = 3
 
@@ -58,28 +67,34 @@ def predicate_safe(iml, imu, ol, ou):
 
 import numpy as np
 # Load in approximate posterior distribution
-bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s"%(post_string, width, depth))
+bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))
+bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-bayes_model.posterior_var += 0.000000001
 # SELECT THE INPUT
 img = np.asarray([X_test[INDEX]])
 #TRUE_VALUE = y_test[INDEX]
 TRUE_VALUE = np.argmax(bayes_model.predict(np.asarray([img]))) #y_test[INDEX]
 
+import json
+dir = "Logs"
+post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
-img = np.asarray([X_test[INDEX]])
-img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+for EPSILON in np.linspace(0.01, 0.2, 16):
+    img = np.asarray([X_test[INDEX]])
+    img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
+    img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+    p_lower = prob_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH)
+    print("~~~~~~~~~ Safety Probability: ", p_lower)
+    if(p_lower < 0.5):
+        break
+EPSILON -= 0.01
+print("Radius: ", eps)
+
+iterations = 0
+record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+with open("%s/%s"%(dir, post_string), 'a') as f:
+    json.dump(record, f)
+    f.write(os.linesep)
 
 
-# We start with epsilon = 0.0 and increase it as we go.
-p_lower = prob_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH)
-print("Initial Safety Probability: ", p_lower)
-#dir = "ExperimentalLogsVOGN"
-#import json
-#iterations = 0
-#record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":EPSILON,  "Iterations":iterations, "Width":width, "Depth":depth}
-#with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:
-#    json.dump(record, f)
-#    f.write(os.linesep)
 

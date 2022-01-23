@@ -39,7 +39,7 @@ INDEX = imnum
 #MARGIN = 2.0
 #SAMPLES = 10
 #MAXDEPTH = 5
-MARGIN = 2.35
+MARGIN = 2.25
 SAMPLES = 3
 MAXDEPTH = 3
 
@@ -70,8 +70,7 @@ output_range = np.max(y_test) - np.min(y_test)
 print("Output range: ", np.max(y_test) - np.min(y_test))
 DELTA = 0.25 * (output_range)
 print("HERE IS DELTA: ", DELTA)
-#sys.exit(0)
-# Dataset information:
+
 in_dims = X_train.shape[1]
 
 # Dataset information:
@@ -95,84 +94,13 @@ def predicate_unsafe(iml, imu, ol, ou):
         return False
 
 import json
-dir = "ExperimentalLogs"
+dir = "Logs"
 
 # ===================================================
-#        First we check with eps = 1.0
+#        Check down coarse grained
 # ===================================================
-eps = 1.0
-img = np.asarray([X_test[INDEX]])
-img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
-img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
-# We start with epsilon = 0.0 and increase it as we go.
-p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
-p_upper = 1-p_upper
-print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
-if(p_upper > 0.5):
-    record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-    with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-    sys.exit(0)
-# ===================================================
-#        Next we check with eps = 0.5
-# ===================================================
-eps = 0.5
-img = np.asarray([X_test[INDEX]])
-img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
-img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
-# We start with epsilon = 0.0 and increase it as we go.
-p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
-p_upper = 1-p_upper
-print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
-if(p_upper > 0.5):
-    record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-    with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-    sys.exit(0)
-
-# ===================================================
-#        First we check with eps = 0.25
-# ===================================================
-eps = 0.25
-img = np.asarray([X_test[INDEX]])
-img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
-img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
-# We start with epsilon = 0.0 and increase it as we go.
-p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
-p_upper = 1-p_upper
-print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
-if(p_upper > 0.5):
-    record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-    with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-    sys.exit(0)
-
-# ===================================================
-#        First we check with eps = 0.15
-# ===================================================
-eps = 0.15
-img = np.asarray([X_test[INDEX]])
-img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
-img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
-# We start with epsilon = 0.0 and increase it as we go.
-p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
-p_upper = 1-p_upper
-print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
-if(p_upper > 0.5):
-    record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-    with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-    sys.exit(0)
-
-# ===================================================
-#        Then we systematically check down
-# ===================================================
-for eps in np.linspace(0.1, 0.01, 10):
-#for eps in np.linspace(0.15, 0.05, 10):
+DONE = False
+for eps in np.linspace(1.0, 0.2, 9):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
     img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
@@ -180,12 +108,32 @@ for eps in np.linspace(0.1, 0.01, 10):
     p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
     p_upper = 1-p_upper
     print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
-    if(p_upper > 0.5):
+    if(p_upper > 0.75):
+        DONE = True
         break
-#eps += 0.1
+
+if(DONE):
+    iterations = 0
+    record = {"Index":INDEX, "Lower":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+    with open("%s/%s_upper.log"%(dir, post_string), 'a') as f:
+        json.dump(record, f)
+        f.write(os.linesep)
+        sys.exit(0)
+
+# ===================================================
+#        Then we systematically check down
+# ===================================================
+for eps in np.linspace(0.1, 0.01, 10):
+    img = np.asarray([X_test[INDEX]])
+    img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
+    img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
+    # We start with epsilon = 0.0 and increase it as we go.
+    p_upper = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_unsafe, depth=MAXDEPTH)
+    p_upper = 1-p_upper
+    print("~~~~~~~~~~~~~~~~~~~~~~~~ Safety Probability: ", p_upper)
+    if(p_upper > 0.75):
+        break
 print("Radius: ", eps)
-
-
 
 import json
 iterations = 0
