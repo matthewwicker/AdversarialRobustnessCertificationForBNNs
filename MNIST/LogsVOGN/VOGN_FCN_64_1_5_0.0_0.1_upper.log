@@ -1,2 +1,4 @@
 {"Index": 500, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 1.0, "Depth": 3}
 {"Index": 601, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.17500000000000004, "Depth": 3}
+{"Index": 602, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.475, "Depth": 3}
+{"Index": 501, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.4, "Depth": 3}

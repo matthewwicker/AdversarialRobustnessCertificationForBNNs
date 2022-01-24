@@ -100,7 +100,7 @@ dir = "Logs"
 #        Check down coarse grained
 # ===================================================
 DONE = False
-for eps in np.linspace(1.0, 0.2, 9):
+for eps in np.linspace(1.0, 0.1, 19):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
     img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
