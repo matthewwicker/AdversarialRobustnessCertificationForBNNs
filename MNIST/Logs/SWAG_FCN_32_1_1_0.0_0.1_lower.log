@@ -1,2 +1,6 @@
 {"Index": 0, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.16466666666666666, "Depth": 3}
 {"Index": 101, "Lower": 0.9749341604226309, "Samples": 3, "Margin": 3.1, "MaxEps": 0.19, "Depth": 3}
+{"Index": 1, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.025333333333333333, "Depth": 3}
+{"Index": 101, "Lower": 0.9835377900978743, "Samples": 3, "Margin": 3.1, "MaxEps": 0.19, "Depth": 3}
+{"Index": 2, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.17733333333333334, "Depth": 3}
+{"Index": 101, "Lower": 0.9876820209441819, "Samples": 3, "Margin": 3.1, "MaxEps": 0.19, "Depth": 3}

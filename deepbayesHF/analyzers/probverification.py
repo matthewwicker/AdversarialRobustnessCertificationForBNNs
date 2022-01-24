@@ -318,9 +318,7 @@ def compute_probability_subroutine(args): #(model, weight_intervals, margin, ver
     #print("Prob: ", full_p)
     return full_p
 
-
 def compute_probability_bonferroni_n(model, weight_intervals, margin, depth, max_depth, current_approx, verbose=True, n_proc=30):
-    #print("In depth: ", depth)
     probability_args = []
     for combination in itertools.combinations(range(len(weight_intervals)), depth):
         # intersection of first two
@@ -343,27 +341,14 @@ def compute_probability_bonferroni_n(model, weight_intervals, margin, depth, max
     print("Current approximation: %s"%(current_approx))
     return current_approx
 
-    #if(depth == max_depth):
-    #    return  (p1 * (-1)**(depth-1)) 
-    #else:
-    #    total_prob = (p1 * (-1)**(depth-1)) + compute_probability_bonferroni_n(model, weight_intervals, margin, depth+1, max_depth, current_approx, verbose, n_proc)
-    #    current_approx = current_approx + compute_probability_bonferroni_n(model, weight_intervals, margin, depth+1, max_depth, current_approx, verbose, n_proc)
-    #    print("Why is this the total probability? ", current_approx)
-    #    return current_approx
-
-
 def compute_probability_bonferroni(model, weight_intervals, margin, max_depth=4, verbose=True, n_proc=30):
-    #intersections_l, intersections_u = [], []
     print("About to compute intersection for this many intervals: ", len(weight_intervals))
     stage1_args = []
     stage2_args = []
     int_l, int_u = [], []
     for wi in trange(len(weight_intervals), desc="Computing intersection weights"):
         stage1_args.append((model.posterior_mean, model.posterior_var, np.swapaxes(np.asarray([weight_intervals[wi]]),1,0), margin, verbose, n_proc, False))
-        #for wj in range(wi+1, len(weight_intervals)):
-        #    i_l, i_u = intersect_intervals(weight_intervals[wi], weight_intervals[wj], margin, model.posterior_var)
-        #    stage2_args.append((model.posterior_mean, model.posterior_var, [i_l, i_u], 0.0, verbose, n_proc, True))
-        #    int_l.append(i_l); int_u.append(i_u)
+
     print("Depth 1 has %s intersections"%(len(stage1_args)))
     proc_pool = Pool(n_proc)
     stage1p = []
@@ -376,20 +361,8 @@ def compute_probability_bonferroni(model, weight_intervals, margin, max_depth=4,
     print("Depth 1 prob: ", p1)
 
     current_approx = compute_probability_bonferroni_n(model, weight_intervals, margin, 2, max_depth, p1, verbose, n_proc)
-    print("Approx 2 from function: ", current_approx)
+    print("Depth 2 prob:: ", current_approx)
 
-    #print("Depth 2 has %s intersections"%(len(stage2_args)))
-    #proc_pool = Pool(n_proc)
-    #stage2p = [] #proc_pool.map(compute_probability_subroutine, stage2_args)
-    #for result in tqdm.tqdm(proc_pool.imap_unordered(compute_probability_subroutine, stage2_args), total=len(stage2_args)):
-    #    stage2p.append(result)
-    #proc_pool.close()
-    #proc_pool.join()
-    #p2 = sum(stage2p)
-
-    #print("Depth 2 prob: ", -p2)
-    #print("Current Approximation: ", p1 - p2)
-    #current_approx = p1 - p2
     if(max_depth >= 3):
         approx = current_approx
         for i in range(3, max_depth+1):
@@ -397,7 +370,67 @@ def compute_probability_bonferroni(model, weight_intervals, margin, max_depth=4,
             print("Got this approximation: ", approx)
         return approx
     else:
-        return p1 - p2
+        return current_approx
+
+def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth, max_depth, current_approx, verbose=True, n_proc=30):
+    probability_args = []
+    output_values = []
+    for combination in itertools.combinations(range(len(weight_intervals)), depth):
+        # intersection of first two
+        val_l = min(values[combination[0]], values[combination[1]])
+        int_l, int_u = intersect_intervals(weight_intervals[combination[0]], weight_intervals[combination[1]], margin, model.posterior_var)
+        for c in range(2, len(combination)):
+            # intersection of the rest
+            val_l = min(val_l, values[combination[c]])
+            int_l, int_u = intersection_bounds(int_l, int_u, weight_intervals[c], margin, model.posterior_var)
+        probability_args.append((model.posterior_mean, model.posterior_var, [int_l, int_u], 0.0, verbose, n_proc, True))
+        output_values.append(val_l)
+    print("Depth %s has %s intersections"%(depth, len(probability_args)))
+    proc_pool = Pool(n_proc)
+    stage1p = []
+    for result in tqdm.tqdm(proc_pool.imap_unordered(compute_probability_subroutine, probability_args), total=len(probability_args)):
+        stage1p.append(result)
+    proc_pool.close()
+    proc_pool.join()
+    p1 = sum(np.multiply(stage1p,output_values))
+
+    print("Depth %s prob: %s"%(depth, p1*(-1)**(depth-1)))
+    current_approx = current_approx + p1*(-1)**(depth-1)
+    print("Current approximation: %s"%(current_approx))
+    return current_approx
+
+
+def compute_decision_bonferroni(model, weight_intervals, values, margin, max_depth=4, verbose=True, n_proc=30):
+    print("About to compute intersection for this many intervals: ", len(weight_intervals))
+    print("GOT THIS MANY VALUES: ", len(values), values)
+    stage1_args = []
+    stage2_args = []
+    int_l, int_u = [], []
+    for wi in trange(len(weight_intervals), desc="Computing intersection weights"):
+        stage1_args.append((model.posterior_mean, model.posterior_var, np.swapaxes(np.asarray([weight_intervals[wi]]),1,0), margin, verbose, n_proc, False))
+
+    print("Depth 1 has %s intersections"%(len(stage1_args)))
+    proc_pool = Pool(n_proc)
+    stage1p = []
+    #stage1p = proc_pool.map(compute_probability_subroutine, stage1_args)
+    for result in tqdm.tqdm(proc_pool.imap_unordered(compute_probability_subroutine, stage1_args), total=len(stage1_args)):
+        stage1p.append(result)
+    proc_pool.close()
+    proc_pool.join()
+    p1 = sum(np.multiply(stage1p,values))
+    print("Depth 1 prob: ", p1)
+
+    current_approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, 2, max_depth, p1, verbose, n_proc)
+    print("Depth 2 prob:: ", current_approx)
+
+    if(max_depth >= 3):
+        approx = current_approx
+        for i in range(3, max_depth+1):
+            approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, i, max_depth, approx, verbose, n_proc)
+            print("Got this approximation: ", approx)
+        return approx
+    else:
+        return current_approx
 
 # Using Fréchet inequalities
 def compute_probability_frechet(model, weight_intervals, margin, verbose=True, n_proc=30):
@@ -431,6 +464,23 @@ def prob_veri(model, s0, s1, w_marg, samples, predicate, i0=0, depth=4):
     print("Found %s safe intervals"%(len(safe_weights)))
     p = compute_probability_bonferroni(model, safe_weights, w_marg, max_depth=depth)
     return p
+
+def decision_veri(model, s0, s1, w_marg, samples, predicate, value, i0=0, depth=4):
+    assert(samples >= (depth)) #, "Ensure samples > depth. Otherwise probability computation is unsound.")
+    w_marg = w_marg*2
+    safe_weights = []
+    logit_values = []
+    for i in trange(samples, desc="Checking Samples"):
+        model.model.set_weights(model.sample())
+        ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
+        if(predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))):
+            logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+            safe_weights.append(model.model.get_weights())
+    print("Found %s safe intervals"%(len(safe_weights)))
+    logit_values = np.asarray(logit_values)
+    p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth)
+    return p
+
 
 def prob_veri_upper(model, s0, s1, w_marg, samples, predicate, depth=4, loss_fn=tf.keras.losses.MeanAbsoluteError()):
     assert(samples >= (depth)) #, "Ensure samples > depth. Otherwise probability computation is unsound.")
