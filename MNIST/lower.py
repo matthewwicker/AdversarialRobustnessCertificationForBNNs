@@ -76,10 +76,10 @@ img = np.asarray([X_test[INDEX]])
 TRUE_VALUE = np.argmax(bayes_model.predict(np.asarray([img]))) #y_test[INDEX]
 
 import json
-dir = "Logs"
+dir = "LogsVOGN"
 post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
-for EPSILON in np.linspace(0.01, 0.2, 16):
+for EPSILON in np.linspace(0.0, 0.5, 26):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
     img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
