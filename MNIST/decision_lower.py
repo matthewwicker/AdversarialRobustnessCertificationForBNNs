@@ -92,6 +92,15 @@ import json
 dir = "Logs"
 post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
+EPSILON = 0.12
+img = np.asarray([X_test[INDEX]])
+img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
+img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, value=logit_value, depth=MAXDEPTH)
+print("~~~~~~~~~ Decision Probability: ", p_lower)
+
+sys.exit(-1)
+
 for EPSILON in np.linspace(0.01, 0.2, 16):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)

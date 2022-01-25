@@ -482,6 +482,31 @@ def decision_veri(model, s0, s1, w_marg, samples, predicate, value, i0=0, depth=
     return p
 
 
+def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=4, loss_fn=tf.keras.losses.MeanAbsoluteError()):
+    assert(samples >= (depth)) #, "Ensure samples > depth. Otherwise probability computation is unsound.")
+    w_marg = w_marg*2
+    safe_weights = []
+    safe_outputs = []
+    logit_values = []
+    inp = s0+s1/2
+    eps = s0-s1
+    for i in trange(samples, desc="Checking Samples"):
+        model.model.set_weights(model.sample())
+        # Insert attacks here
+        #if(i%mod_option == 0):
+        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-1, num_models=-1, order=1, num_steps=25)
+        ol, ou = IBP_prob(model, adv, adv, model.model.get_weights(), w_marg)
+        unsafe = predicate(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou))
+        if(unsafe):
+            logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+            safe_weights.append(model.model.get_weights())
+    print("Found %s safe intervals"%(len(safe_weights)))
+    #if(len(safe_weights) < 2):
+    #    return 0.0, -1
+    #p = compute_probability(model, np.swapaxes(np.asarray(safe_weights),1,0), w_marg)
+    p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth)
+    return p #, np.squeeze(safe_outputs)
+
 def prob_veri_upper(model, s0, s1, w_marg, samples, predicate, depth=4, loss_fn=tf.keras.losses.MeanAbsoluteError()):
     assert(samples >= (depth)) #, "Ensure samples > depth. Otherwise probability computation is unsound.")
     w_marg = w_marg*2

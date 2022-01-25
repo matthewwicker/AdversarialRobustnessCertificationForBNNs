@@ -1,4 +1,4 @@
-for IMG in {1000..1100}
+for IMG in {1700..1800}
 do
 	for WIDTH in 32
 	do
