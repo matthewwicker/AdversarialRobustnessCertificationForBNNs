@@ -78,3 +78,5 @@
 {"Index": 1313, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.15, "Depth": 3}
 {"Index": 1121, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.03, "Depth": 3}
 {"Index": 1020, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.07, "Depth": 3}
+{"Index": 1415, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.049999999999999996, "Depth": 3}
+{"Index": 1314, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.15, "Depth": 3}
