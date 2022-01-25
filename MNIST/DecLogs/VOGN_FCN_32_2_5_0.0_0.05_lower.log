@@ -158,3 +158,6 @@
 {"Index": 9, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.21800000000000003, "Depth": 3, "layers": 2}
 {"Index": 9, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.234, "Depth": 3, "layers": 2}
 {"Index": 9, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.25, "Depth": 3, "layers": 2}
+{"Index": 10, "Lower": 0.9709228661046625, "Samples": 3, "Margin": 3.1, "MaxEps": 0.01, "Depth": 3, "layers": 2}
+{"Index": 10, "Lower": 0.9463252622962545, "Samples": 3, "Margin": 3.1, "MaxEps": 0.026000000000000002, "Depth": 3, "layers": 2}
+{"Index": 10, "Lower": 0.9379057120986378, "Samples": 3, "Margin": 3.1, "MaxEps": 0.042, "Depth": 3, "layers": 2}
