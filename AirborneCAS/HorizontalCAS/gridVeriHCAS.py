@@ -112,14 +112,10 @@ if len(sys.argv) > 2:
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
     radi = ((maxs-mins)/desc)/4
-    #print(radi)
-    #print("a")
 
     inps = []
     lowers = []
     uppers = []
-    #print((maxs[0]-mins[0])/25)
-    #print("b")
     for a in np.linspace(mins[0], maxs[0], desc[0]):
         for b in np.linspace(mins[1], maxs[1], desc[1]):
             for c in np.linspace(mins[2], maxs[2], desc[2]):
@@ -127,19 +123,15 @@ if len(sys.argv) > 2:
                 lowers.append(np.asarray([a,b,c] - radi))
                 uppers.append(np.asarray([a,b,c] + radi))
 
-    #print(inps[0])
     indexes = np.linspace(0, len(inps), n_concur)
     a = int(indexes[p_concur])
     b = int(indexes[p_concur+1])
     inps = inps[a:b]
-    #print(bayes_model.predict(np.asarray([inps[0]])))
-    #print(bayes_model.predict(inps[0]))
     y_pred = bayes_model.predict(np.asarray([inps]))
     y_pred = np.squeeze(y_pred)
-    #print(y_pred)
     classes = np.argmax(y_pred, axis=1)
-    #print(classes)
     indforprop = []
+
     for i in range(len(inps)):
         print(classes[i], CLS_VALUES)
         if(classes[i] in CLS_VALUES):
@@ -152,25 +144,14 @@ if len(sys.argv) > 2:
         SAMPLES = 3
         MARGIN = 2.75
 
-        #y_pred = bayes_model.predict(np.asarray([inps[i]]))
-        #if(np.argmax(y_pred) != TRUE_VALUE):
-        #    print("misclassified")
-        #    record = {"Index":INDEX, "Lower":0.0, "Samples":0, "Margin":MARGIN, "Epsilon":EPSILON, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
-        #    post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
-        #    with open("%s/%s_lower.log"%("GridLogs", post_string), 'a') as f:
-        #        json.dump(record, f)
-        #        f.write(os.linesep)
-        #    continue
-
         inp_upper = np.asarray([uppers[i]])
         inp_lower = np.asarray([lowers[i]])
 
         p_lower = prob_veri(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, predicate=phi_n, depth=MAXDEPTH)
         print("Initial Safety Probability: ", p_lower)
-        #print("c")
 
         #Save result to log files
-        record = {"Index":i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
+        record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
         post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
         with open("%s/%s_lower.log"%("GridLogs", post_string), 'a') as f:
             json.dump(record, f)

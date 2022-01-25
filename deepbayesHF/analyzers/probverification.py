@@ -494,9 +494,9 @@ def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=
         model.model.set_weights(model.sample())
         # Insert attacks here
         #if(i%mod_option == 0):
-        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-1, num_models=-1, order=1, num_steps=25)
-        ol, ou = IBP_prob(model, adv, adv, model.model.get_weights(), w_marg)
-        unsafe = predicate(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou))
+        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-2, num_models=-1, order=1, num_steps=25)
+        ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
+        unsafe = predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
         if(unsafe):
             logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
             safe_weights.append(model.model.get_weights())

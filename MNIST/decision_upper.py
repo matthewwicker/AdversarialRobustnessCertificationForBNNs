@@ -56,27 +56,25 @@ X_train = X_train.astype("float64").reshape(-1, 28*28)
 X_test = X_test.astype("float64").reshape(-1, 28* 28)
 
 def predicate_safe(iml, imu, ol, ou):
-    v1 = tf.one_hot(TRUE_VALUE, depth=10)
-    v2 = 1 - tf.one_hot(TRUE_VALUE, depth=10)
-    v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
-    worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+    #v1 = tf.one_hot(TRUE_VALUE, depth=10)
+    #v2 = 1 - tf.one_hot(TRUE_VALUE, depth=10)
+    #v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+    #worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
     return True
-    if(np.argmax(worst_case) == TRUE_VALUE):
-        return True
-    else:
-        return False
+    #if(np.argmax(worst_case) == TRUE_VALUE):
+    #    return True
+    #else:
+    #    return False
 
 def logit_value(iml, imu, ol, ou):
     v1 = tf.one_hot(TRUE_VALUE, depth=10)
     v2 = 1 - tf.one_hot(TRUE_VALUE, depth=10)
     v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
-    worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
-    worst_case = tf.nn.softmax(worst_case)
-    return worst_case[TRUE_VALUE]
-    #if(np.argmax(worst_case) == TRUE_VALUE):
-    #    return True
-    #else:
-    #    return False
+    #best_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+    #best_case = tf.nn.softmax(best_case)
+    best_case = tf.math.add(tf.math.multiply(v1, ou), tf.math.multiply(v2, ol))
+    best_case = tf.nn.softmax(best_case)
+    return best_case[TRUE_VALUE]
 
 
 import numpy as np
@@ -84,10 +82,14 @@ import numpy as np
 bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))
 bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-#for i in range(len(X_test)):
-#    img = np.asarray([X_test[i]])
-#    y = bayes_model.predict(img)
-#    print(np.max(y))
+outputs = bayes_model.predict(X_test)
+outputs = np.max(outputs, axis=1)
+uncertain_inputs = np.argwhere(outputs < 0.25)
+print(len(uncertain_inputs))
+
+INDEX = uncertain_inputs[INDEX]
+INDEX = np.squeeze(INDEX)
+INDEX = int(INDEX)
 
 # SELECT THE INPUT
 img = np.asarray([X_test[INDEX]])
@@ -95,33 +97,21 @@ img = np.asarray([X_test[INDEX]])
 TRUE_VALUE = np.argmax(bayes_model.predict(np.asarray([img]))) #y_test[INDEX]
 
 import json
-dir = "Logs"
-post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
+dir = "DecLogs"
+post_string = "%s_FCN_%s_%s_%s_%s_%s_upper.log"%(optim, width, depth, rob, lam, eps)
 
-EPSILON = 0.1
-img = np.asarray([X_test[INDEX]])
-img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
-p_upper = 1-decision_veri_upper(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, value=logit_value, depth=MAXDEPTH)
-print(p_upper)
-sys.exit(0)
-
-for EPSILON in np.linspace(0.01, 0.2, 16):
+for EPSILON in np.linspace(0.01, 0.25, 16):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
     img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
-    p_lower = decision_veri_upper(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, value=logit_value, depth=MAXDEPTH)
-    print("~~~~~~~~~ Decision Probability: ", p_lower)
-    if(p_lower < 0.5):
-        break
-EPSILON -= 0.01
-print("Radius: ", eps)
-
-#iterations = 0
-#record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-#with open("%s/%s"%(dir, post_string), 'a') as f:
-#    json.dump(record, f)
-#    f.write(os.linesep)
-
+    p_upper = decision_veri_upper(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, value=logit_value, depth=MAXDEPTH)
+    INDEX = np.squeeze(INDEX)
+    INDEX = int(INDEX)
+    record = {"Index":INDEX, "Upper":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH, "layers":depth}
+    print(record)
+    with open("%s/%s"%(dir, post_string), 'a') as f:
+        json.dump(record, f)
+        f.write(os.linesep)
+    print("~~~~~~~~~ Decision Probability: ", p_upper)
 
 

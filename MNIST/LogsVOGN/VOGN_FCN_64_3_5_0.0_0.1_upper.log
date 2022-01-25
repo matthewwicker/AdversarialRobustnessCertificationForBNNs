@@ -6,3 +6,5 @@
 {"Index": 502, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.2875, "Depth": 3}
 {"Index": 604, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.5875, "Depth": 3}
 {"Index": 503, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.55, "Depth": 3}
+{"Index": 504, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 1.0, "Depth": 3}
+{"Index": 605, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.2875, "Depth": 3}

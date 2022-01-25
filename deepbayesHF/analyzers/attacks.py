@@ -141,7 +141,8 @@ def _PGD(model, inp, loss_fn, eps, direc=-1, step=0.1, num_steps=15, num_models=
             direc = np.argmax(direc, axis=1)
         except:
             direc = np.argmax(direc)
-
+        if(direc == -2):
+            direc = -1 * direc
     adv = np.asarray(inp)
     maxi = adv + eps; mini = adv - eps
     adv = adv + ((eps/10) * np.sign(np.random.normal(0.0, 1.0, size=adv.shape)))
