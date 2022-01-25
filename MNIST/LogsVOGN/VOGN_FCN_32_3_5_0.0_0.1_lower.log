@@ -76,3 +76,4 @@
 {"Index": 1019, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.15, "Depth": 3}
 {"Index": 1414, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.03, "Depth": 3}
 {"Index": 1313, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": 0.19, "Depth": 3}
+{"Index": 1121, "Lower": 0, "Samples": 3, "Margin": 3.1, "MaxEps": -0.01, "Depth": 3}
