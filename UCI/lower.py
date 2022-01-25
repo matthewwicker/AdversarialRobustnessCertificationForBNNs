@@ -33,9 +33,9 @@ post_string = dataset_string
 INDEX = imnum
 
 # VERIFICATION HYPER PARAMETERS
-MARGIN = 2.35
-SAMPLES = 3
-MAXDEPTH = 3
+MARGIN = 2.25
+SAMPLES = 5
+MAXDEPTH = 5
 
 data = Dataset(dataset_string)
 from sklearn.preprocessing import StandardScaler
@@ -105,9 +105,9 @@ for eps in np.linspace(0.01, 0.2, 16):
 eps -= 0.01
 print("Radius: ", eps)
 
-iterations = 0
-record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:
-    json.dump(record, f)
-    f.write(os.linesep)
+#iterations = 0
+#record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+#with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:
+#    json.dump(record, f)
+#    f.write(os.linesep)
 
