@@ -36,34 +36,22 @@ if len(sys.argv) > 1:
     ranges=np.array(f['ranges'])
     min_inputs = np.array(f['min_inputs'])
     max_inputs = np.array(f['max_inputs'])
-                       
     N,numOut = Q.shape
     print("Setting up Model")
     
-    # Asymmetric loss function
-    lossFactor = 40.0
-    def asymMSE(y_true, y_pred):
-        d = y_true-y_pred
-        maxes = tf.argmax(y_true,axis=1)
-        maxes_onehot = tf.one_hot(maxes,numOut)
-        others_onehot = maxes_onehot-1
-        d_opt = d*maxes_onehot 
-        d_sub = d*others_onehot
-        a = lossFactor*(numOut-1)*(tf.square(d_opt)+tf.abs(d_opt))
-        b = tf.square(d_opt)
-        c = lossFactor*(tf.square(d_sub)+tf.abs(d_sub))
-        d = tf.square(d_sub)
-        loss = tf.where(d_sub>0,c,d) + tf.where(d_opt>0,a,b)
-        return tf.reduce_mean(loss)
-
     N,numInputs = X_train.shape
     N,numOut = Q.shape
     X_train = tf.cast(X_train, dtype=tf.float32)
     y_train = tf.argmax(y_train,axis=1)
     print("Setting up Model")
 
-    loss = tf.keras.losses.SparseCategoricalCrossentropy()
-    #loss = tf.keras.losses.CategoricalCrossentropy()
+    scce = tf.keras.losses.SparseCategoricalCrossentropy()
+    def custom_loss(logits, labels):
+        weights = tf.where(tf.argmax(labels,axis=1)==1, 0.01, 1.0)
+        return scce(logits, labels, sample_weight=tf.constant(weights))
+
+    #loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    loss = custom_loss
     # Use Keras to define our model
     WIDTH = 125
     model = Sequential()
@@ -72,12 +60,12 @@ if len(sys.argv) > 1:
 
     # Use deepbayesHF to define our optimizer
     optimizer = optimizers.VOGN()
-    bayes_model = optimizer.compile(model, loss_fn=loss, learning_rate = 0.05,
-                          epochs=25, batch_size=1024, decay=0.1,
+    bayes_model = optimizer.compile(model, loss_fn=loss, learning_rate = 0.025,
+                          epochs=1, batch_size=10000, decay=0.1,
                           # input_noise=0.05,
-                          robust_train = 5, epsilon=0.05, rob_lam=0.0, classes=9,
+                          robust_train = 5, epsilon=0.025, rob_lam=0.25, classes=9,
                           inflate_prior=0.05, mode='classification') # select optimizer and set learning rate
 
     # Train and save BNN using deepbayesHF
-    bayes_model.train(X_train, y_train, X_train, y_train)
-    bayes_model.save('Posteriors/ROB_VCAS_BNN_%s'%(pra))
+    bayes_model.train(X_train, y_train, X_train[0:1000], y_train[0:1000])
+    bayes_model.save('Posteriors/ONE_VCAS_BNN_%s'%(pra))
