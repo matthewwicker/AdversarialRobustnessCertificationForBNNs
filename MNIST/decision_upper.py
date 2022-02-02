@@ -56,15 +56,7 @@ X_train = X_train.astype("float64").reshape(-1, 28*28)
 X_test = X_test.astype("float64").reshape(-1, 28* 28)
 
 def predicate_safe(iml, imu, ol, ou):
-    #v1 = tf.one_hot(TRUE_VALUE, depth=10)
-    #v2 = 1 - tf.one_hot(TRUE_VALUE, depth=10)
-    #v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
-    #worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
     return True
-    #if(np.argmax(worst_case) == TRUE_VALUE):
-    #    return True
-    #else:
-    #    return False
 
 def logit_value(iml, imu, ol, ou):
     v1 = tf.one_hot(TRUE_VALUE, depth=10)

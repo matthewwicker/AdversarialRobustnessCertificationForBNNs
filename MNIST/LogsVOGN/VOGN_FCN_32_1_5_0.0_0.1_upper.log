@@ -388,3 +388,5 @@
 {"Index": 542, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.21250000000000002, "Depth": 3}
 {"Index": 644, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.5125, "Depth": 3}
 {"Index": 543, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.2875, "Depth": 3}
+{"Index": 544, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.9625, "Depth": 3}
+{"Index": 645, "Lower": 1, "Samples": 3, "Margin": 3.1, "MaxEps": 0.25, "Depth": 3}
