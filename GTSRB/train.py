@@ -8,9 +8,9 @@ sys.path.append(str(path.parent))
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--eps", default=0.0)
-parser.add_argument("--lam", default=1.0)
-parser.add_argument("--rob", default=0.0)
+parser.add_argument("--eps", default=0.05)
+parser.add_argument("--lam", default=0.5)
+parser.add_argument("--rob", default=5)
 parser.add_argument("--gpu", nargs='?', default='0,1,2,3,4,5')
 parser.add_argument("--opt")
 
@@ -20,7 +20,7 @@ lam = float(args.lam)
 rob = int(args.rob)
 optim = str(args.opt)
 gpu = str(args.gpu)
-os.environ['CUDA_VISIBLE_DEVICES'] = gpu
+os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 
 
 
@@ -92,7 +92,7 @@ elif(optim == 'SGD'):
     learning_rate = 0.05*lr; decay=0.1
     opt = optimizers.StochasticGradientDescent()
 # Compile the model to train with Bayesian inference
-if(rob == 0 or rob == 3 or rob == 4):
+if(rob == 0 or rob == 3 or rob == 4 or rob == 5):
     loss = tf.keras.losses.SparseCategoricalCrossentropy()
 else:
     loss = BayesKeras.optimizers.losses.robust_crossentropy_loss
@@ -102,7 +102,7 @@ model_type = "small"
 #learning_rate *= 1.5
 
 bayes_model = opt.compile(model, loss_fn=loss, epochs=10, learning_rate=learning_rate, batch_size=128, input_noise=0.0,
-                          decay=decay, robust_train=rob, epsilon=eps, rob_lam=lam, inflate_prior=inf, 
+                          decay=decay, robust_train=rob, epsilon=eps, rob_lam=lam, inflate_prior=inf, classes=2,
                           log_path="Posteriors/%s_%s_Posterior_%s.log"%(optim, model_type, rob))
 
 # Train the model on your data

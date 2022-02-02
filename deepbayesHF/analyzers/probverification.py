@@ -417,8 +417,9 @@ def compute_decision_bonferroni(model, weight_intervals, values, margin, max_dep
         stage1p.append(result)
     proc_pool.close()
     proc_pool.join()
-    p1 = sum(np.multiply(stage1p,values))
-    print("Depth 1 prob: ", p1)
+    d1 = sum(np.multiply(stage1p,values))
+    p1 = sum(stage1p)
+    print("Depth 1 prob: ", p1, "logit val: ", d1)
 
     current_approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, 2, max_depth, p1, verbose, n_proc)
     print("Depth 2 prob:: ", current_approx)
