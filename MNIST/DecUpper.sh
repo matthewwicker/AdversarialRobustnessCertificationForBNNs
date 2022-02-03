@@ -6,9 +6,13 @@
 #parser.add_argument("--opt", default="VOGN")
 #parser.add_argument("--width", default=32)
 #parser.add_argument("--depth", default=1)
-for imnum in {2..100}
+for imnum in {0..100}
 do
-	python3 decision_upper.py --imnum $imnum --depth 1 &
-	python3 decision_upper.py --imnum $imnum --depth 2 &
-	python3 decision_upper.py --imnum $imnum --depth 3 
+	python3 decision_upper.py --imnum $imnum --depth 1  --data "mnist" &
+	python3 decision_upper.py --imnum $imnum --depth 2  --data "mnist" &
+	python3 decision_upper.py --imnum $imnum --depth 3  --data "mnist" &
+	python3 decision_upper.py --imnum $imnum --depth 1  --data "fmnist" &
+	python3 decision_upper.py --imnum $imnum --depth 2  --data "fmnist" &
+	python3 decision_upper.py --imnum $imnum --depth 3  --data "fmnist" &
+        wait
 done

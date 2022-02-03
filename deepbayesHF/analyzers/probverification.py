@@ -372,16 +372,22 @@ def compute_probability_bonferroni(model, weight_intervals, margin, max_depth=4,
     else:
         return current_approx
 
-def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth, max_depth, current_approx, verbose=True, n_proc=30):
+def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth, max_depth, current_prob, current_dec, verbose=True, n_proc=30, y_inf=0.0):
     probability_args = []
     output_values = []
     for combination in itertools.combinations(range(len(weight_intervals)), depth):
         # intersection of first two
-        val_l = min(values[combination[0]], values[combination[1]])
+        if(y_inf == 1.0): # upperbounding
+            val_l = min(values[combination[0]], values[combination[1]])
+        else: # lowerbounding
+            val_l = max(values[combination[0]], values[combination[1]])
         int_l, int_u = intersect_intervals(weight_intervals[combination[0]], weight_intervals[combination[1]], margin, model.posterior_var)
         for c in range(2, len(combination)):
             # intersection of the rest
-            val_l = min(val_l, values[combination[c]])
+            if(y_inf == 1.0):
+                val_l = min(val_l, values[combination[c]])
+            else:
+                val_l = max(val_l, values[combination[c]])
             int_l, int_u = intersection_bounds(int_l, int_u, weight_intervals[c], margin, model.posterior_var)
         probability_args.append((model.posterior_mean, model.posterior_var, [int_l, int_u], 0.0, verbose, n_proc, True))
         output_values.append(val_l)
@@ -392,15 +398,17 @@ def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth
         stage1p.append(result)
     proc_pool.close()
     proc_pool.join()
-    p1 = sum(np.multiply(stage1p,output_values))
+    d1 = sum(np.multiply(stage1p,output_values))
+    p1 = sum(stage1p)
 
-    print("Depth %s prob: %s"%(depth, p1*(-1)**(depth-1)))
-    current_approx = current_approx + p1*(-1)**(depth-1)
-    print("Current approximation: %s"%(current_approx))
-    return current_approx
+    current_prob = current_prob + p1*(-1)**(depth-1)
+    current_dec = current_dec + d1*(-1)**(depth-1)
+    print("Current prob: ", current_prob, " Current dec: ", current_dec)
+    #print("Current approximation: %s"%(current_approx))
+    return current_prob, current_dec
 
 
-def compute_decision_bonferroni(model, weight_intervals, values, margin, max_depth=4, verbose=True, n_proc=30):
+def compute_decision_bonferroni(model, weight_intervals, values, margin, max_depth=4, verbose=True, n_proc=30, y_inf=0.0):
     print("About to compute intersection for this many intervals: ", len(weight_intervals))
     print("GOT THIS MANY VALUES: ", len(values), values)
     stage1_args = []
@@ -421,17 +429,17 @@ def compute_decision_bonferroni(model, weight_intervals, values, margin, max_dep
     p1 = sum(stage1p)
     print("Depth 1 prob: ", p1, "logit val: ", d1)
 
-    current_approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, 2, max_depth, p1, verbose, n_proc)
-    print("Depth 2 prob:: ", current_approx)
+    current_prob, current_dec = compute_decision_bonferroni_n(model, weight_intervals, values, margin, 2, max_depth, p1, d1, verbose, n_proc)
 
+    p_approx = current_prob
+    d_approx = current_dec
     if(max_depth >= 3):
-        approx = current_approx
         for i in range(3, max_depth+1):
-            approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, i, max_depth, approx, verbose, n_proc)
-            print("Got this approximation: ", approx)
-        return approx
+            p_approx, d_approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, i, max_depth, p_approx, d_approx, verbose, n_proc)
+            print("Got this approximation: ", p_approx)
+        return d_approx*p_approx + ((1-p_approx)*y_inf)
     else:
-        return current_approx
+        return d_approx*p_approx + ((1-p_approx)*y_inf)
 
 # Using Fréchet inequalities
 def compute_probability_frechet(model, weight_intervals, margin, verbose=True, n_proc=30):
@@ -505,7 +513,7 @@ def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=
     #if(len(safe_weights) < 2):
     #    return 0.0, -1
     #p = compute_probability(model, np.swapaxes(np.asarray(safe_weights),1,0), w_marg)
-    p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth)
+    p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth, y_inf=1.0)
     return p #, np.squeeze(safe_outputs)
 
 def prob_veri_upper(model, s0, s1, w_marg, samples, predicate, depth=4, loss_fn=tf.keras.losses.MeanAbsoluteError()):

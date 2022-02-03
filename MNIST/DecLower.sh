@@ -8,8 +8,11 @@
 #parser.add_argument("--depth", default=1)
 for imnum in {0..100}
 do
-	python decision_lower.py --imnum $imnum --depth 1 &
-	python decision_lower.py --imnum $imnum --depth 2 &
-	python decision_lower.py --imnum $imnum --depth 3 &
+	python3 decision_lower.py --imnum $imnum --depth 1 --data "mnist" &
+	python3 decision_lower.py --imnum $imnum --depth 2 --data "mnist" &
+	python3 decision_lower.py --imnum $imnum --depth 3 --data "mnist" &
+	python3 decision_lower.py --imnum $imnum --depth 1 --data "fmnist" &
+	python3 decision_lower.py --imnum $imnum --depth 2 --data "fmnist" &
+	python3 decision_lower.py --imnum $imnum --depth 3 --data "fmnist" &
         wait
 done
