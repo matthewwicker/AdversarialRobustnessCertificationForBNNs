@@ -2396,3 +2396,15 @@
 {"Index": 74, "Upper": 0.9773176938286411, "Samples": 3, "Margin": 3.1, "MaxEps": 0.21800000000000003, "Depth": 3, "layers": 1, "Dataset": "mnist"}
 {"Index": 356, "Upper": 0.9821781929216817, "Samples": 3, "Margin": 3.1, "MaxEps": 0.234, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
 {"Index": 74, "Upper": 0.979737892222586, "Samples": 3, "Margin": 3.1, "MaxEps": 0.234, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 356, "Upper": 0.9778452661248388, "Samples": 3, "Margin": 3.1, "MaxEps": 0.25, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
+{"Index": 74, "Upper": 0.9851523604486483, "Samples": 3, "Margin": 3.1, "MaxEps": 0.25, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 75, "Upper": 0.9426890724479117, "Samples": 3, "Margin": 3.1, "MaxEps": 0.01, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 363, "Upper": 0.2636691308731659, "Samples": 3, "Margin": 3.1, "MaxEps": 0.01, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
+{"Index": 75, "Upper": 0.9543266127739405, "Samples": 3, "Margin": 3.1, "MaxEps": 0.026000000000000002, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 363, "Upper": 0.2868658437325103, "Samples": 3, "Margin": 3.1, "MaxEps": 0.026000000000000002, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
+{"Index": 75, "Upper": 0.9671795076242548, "Samples": 3, "Margin": 3.1, "MaxEps": 0.042, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 363, "Upper": 0.31198367345551026, "Samples": 3, "Margin": 3.1, "MaxEps": 0.042, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
+{"Index": 75, "Upper": 0.9742851962575528, "Samples": 3, "Margin": 3.1, "MaxEps": 0.058, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 363, "Upper": 0.34129906407281974, "Samples": 3, "Margin": 3.1, "MaxEps": 0.058, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
+{"Index": 75, "Upper": 0.9735061984940707, "Samples": 3, "Margin": 3.1, "MaxEps": 0.074, "Depth": 3, "layers": 1, "Dataset": "mnist"}
+{"Index": 363, "Upper": 0.37511876197770067, "Samples": 3, "Margin": 3.1, "MaxEps": 0.074, "Depth": 3, "layers": 1, "Dataset": "fmnist"}
