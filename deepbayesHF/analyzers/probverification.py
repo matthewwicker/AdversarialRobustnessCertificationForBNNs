@@ -412,15 +412,13 @@ def compute_decision_bonferroni(model, weight_intervals, values, margin, max_dep
     print("About to compute intersection for this many intervals: ", len(weight_intervals))
     print("GOT THIS MANY VALUES: ", len(values), values)
     stage1_args = []
-    stage2_args = []
     int_l, int_u = [], []
     for wi in trange(len(weight_intervals), desc="Computing intersection weights"):
         stage1_args.append((model.posterior_mean, model.posterior_var, np.swapaxes(np.asarray([weight_intervals[wi]]),1,0), margin, verbose, n_proc, False))
-
     print("Depth 1 has %s intersections"%(len(stage1_args)))
+
     proc_pool = Pool(n_proc)
     stage1p = []
-    #stage1p = proc_pool.map(compute_probability_subroutine, stage1_args)
     for result in tqdm.tqdm(proc_pool.imap_unordered(compute_probability_subroutine, stage1_args), total=len(stage1_args)):
         stage1p.append(result)
     proc_pool.close()
@@ -482,9 +480,9 @@ def decision_veri(model, s0, s1, w_marg, samples, predicate, value, i0=0, depth=
     for i in trange(samples, desc="Checking Samples"):
         model.model.set_weights(model.sample())
         ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
-        if(predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))):
-            logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
-            safe_weights.append(model.model.get_weights())
+        #if(predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))):
+        logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+        safe_weights.append(model.model.get_weights())
     print("Found %s safe intervals"%(len(safe_weights)))
     logit_values = np.asarray(logit_values)
     p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth)
@@ -498,23 +496,19 @@ def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=
     safe_outputs = []
     logit_values = []
     inp = s0+s1/2
-    eps = s0-s1
+    eps = s0-s1/2
     for i in trange(samples, desc="Checking Samples"):
         model.model.set_weights(model.sample())
         # Insert attacks here
-        #if(i%mod_option == 0):
-        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-2, num_models=-1, order=1, num_steps=25)
-        ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
-        unsafe = predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
-        if(unsafe):
-            logit_values.append(value(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou)))
-            safe_weights.append(model.model.get_weights())
+        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-2, num_models=-1, order=1, num_steps=10)
+        ol, ou = IBP_prob(model, adv, adv, model.model.get_weights(), w_marg)
+        #unsafe = predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
+        #if(unsafe):
+        logit_values.append(value(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou)))
+        safe_weights.append(model.model.get_weights())
     print("Found %s safe intervals"%(len(safe_weights)))
-    #if(len(safe_weights) < 2):
-    #    return 0.0, -1
-    #p = compute_probability(model, np.swapaxes(np.asarray(safe_weights),1,0), w_marg)
     p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth, y_inf=1.0)
-    return p #, np.squeeze(safe_outputs)
+    return p
 
 def prob_veri_upper(model, s0, s1, w_marg, samples, predicate, depth=4, loss_fn=tf.keras.losses.MeanAbsoluteError()):
     assert(samples >= (depth)) #, "Ensure samples > depth. Otherwise probability computation is unsound.")
