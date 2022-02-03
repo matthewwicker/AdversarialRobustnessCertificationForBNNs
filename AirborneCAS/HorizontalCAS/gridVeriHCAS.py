@@ -15,6 +15,7 @@ import deepbayesHF
 from deepbayesHF import optimizers
 from deepbayesHF import PosteriorModel
 from deepbayesHF.analyzers import prob_veri
+from deepbayesHF.analyzers import decision_veri
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
@@ -96,14 +97,24 @@ if len(sys.argv) > 2:
         -> phi_6 - notin=[3,4]		    INPUTS: class=[1,2]
         -> phi_7 - notin=[0]		    INPUTS: class=[1,4]
         """
+        return True
+        #v1 = tf.one_hot(TRUE_VALUE, depth=numOut)
+        #v2 = 1 - tf.one_hot(TRUE_VALUE, depth=numOut)
+        #v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+        #worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+        #if(np.argmax(worst_case) not in NOTIN):
+        #    return True
+        #else:
+        #    return False
+
+    def logit_value(iml, imu, ol, ou):
         v1 = tf.one_hot(TRUE_VALUE, depth=numOut)
         v2 = 1 - tf.one_hot(TRUE_VALUE, depth=numOut)
         v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
-        worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
-        if(np.argmax(worst_case) not in NOTIN):
-            return True
-        else:
-            return False
+        best_case = tf.math.add(tf.math.multiply(v1, ou), tf.math.multiply(v2, ol))
+        best_case = tf.nn.softmax(best_case)
+        return best_case[TRUE_VALUE]
+
 
     print("Setting up Verification")
     bayes_model = PosteriorModel("Posteriors/ROB_HCAS_BNN_%s_%s"%(pra, tau))
@@ -147,13 +158,13 @@ if len(sys.argv) > 2:
         inp_upper = np.asarray([uppers[i]])
         inp_lower = np.asarray([lowers[i]])
 
-        p_lower = prob_veri(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, predicate=phi_n, depth=MAXDEPTH)
+        p_lower = decision_veri(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, predicate=phi_n, depth=MAXDEPTH, value=logit_value)
         print("Initial Safety Probability: ", p_lower)
 
         #Save result to log files
         record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
         post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
-        with open("%s/%s_lower.log"%("GridLogs", post_string), 'a') as f:
+        with open("%s/%s_lower.log"%("GridDecLogs", post_string), 'a') as f:
             json.dump(record, f)
             f.write(os.linesep)
 

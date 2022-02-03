@@ -507,7 +507,7 @@ def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=
         ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
         unsafe = predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
         if(unsafe):
-            logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+            logit_values.append(value(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou)))
             safe_weights.append(model.model.get_weights())
     print("Found %s safe intervals"%(len(safe_weights)))
     #if(len(safe_weights) < 2):
