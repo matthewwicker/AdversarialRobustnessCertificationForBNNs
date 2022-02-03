@@ -378,9 +378,9 @@ def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth
     for combination in itertools.combinations(range(len(weight_intervals)), depth):
         # intersection of first two
         if(y_inf == 1.0): # upperbounding
-            val_l = max(values[combination[0]], values[combination[1]])
-        else: # lowerbounding
             val_l = min(values[combination[0]], values[combination[1]])
+        else: # lowerbounding
+            val_l = max(values[combination[0]], values[combination[1]])
         int_l, int_u = intersect_intervals(weight_intervals[combination[0]], weight_intervals[combination[1]], margin, model.posterior_var)
         for c in range(2, len(combination)):
             # intersection of the rest
@@ -500,11 +500,11 @@ def decision_veri_upper(model, s0, s1, w_marg, samples, predicate, value, depth=
     for i in trange(samples, desc="Checking Samples"):
         model.model.set_weights(model.sample())
         # Insert attacks here
-        #adv = attacks.PGD(model, inp, loss_fn, eps, direction=-2, num_models=-1, order=1, num_steps=10)
+        adv = attacks.PGD(model, inp, loss_fn, eps, direction=-2, num_models=-1, order=1, num_steps=7)
         ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
-        #unsafe = predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
-        #if(unsafe):
-        logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+        logit_values.append(value(np.squeeze(adv), np.squeeze(adv), np.squeeze(ol), np.squeeze(ou)))
+        #ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
+        #logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
         safe_weights.append(model.model.get_weights())
     print("Found %s safe intervals"%(len(safe_weights)))
     p = compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth, y_inf=1.0)
