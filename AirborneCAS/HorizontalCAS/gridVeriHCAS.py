@@ -111,9 +111,9 @@ if len(sys.argv) > 2:
         v1 = tf.one_hot(TRUE_VALUE, depth=numOut)
         v2 = 1 - tf.one_hot(TRUE_VALUE, depth=numOut)
         v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
-        best_case = tf.math.add(tf.math.multiply(v1, ou), tf.math.multiply(v2, ol))
-        best_case = tf.nn.softmax(best_case)
-        return best_case[TRUE_VALUE]
+        worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+        worst_case = tf.nn.softmax(worst_case)
+        return worst_case[TRUE_VALUE]
 
 
     print("Setting up Verification")
@@ -122,7 +122,7 @@ if len(sys.argv) > 2:
     mins = np.min(X_train, axis=0)
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
-    radi = ((maxs-mins)/desc)/4
+    radi = ((maxs-mins)/desc)/6
 
     inps = []
     lowers = []

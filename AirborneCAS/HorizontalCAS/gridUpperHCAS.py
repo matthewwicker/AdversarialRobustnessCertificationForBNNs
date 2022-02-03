@@ -121,7 +121,7 @@ if len(sys.argv) > 2:
     mins = np.min(X_train, axis=0)
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
-    radi = ((maxs-mins)/desc)/4
+    radi = ((maxs-mins)/desc)/6
 
     inps = []
     lowers = []
