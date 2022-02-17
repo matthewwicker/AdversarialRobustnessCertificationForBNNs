@@ -2,15 +2,15 @@
 
 # Alright, hold on to your socks this one might be more rough...
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 import sys
 import logging
-sys.path.append("../../")
+sys.path.append("../")
 import deepbayesHF
 from deepbayesHF import PosteriorModel
-from deepbayesHF.analyzers import IBP_prob
-from deepbayesHF.analyzers import IBP_upper
+from deepbayesHF.analyzers import prob_veri
+from deepbayesHF.analyzers import decision_veri
 from deepbayesHF.analyzers import FGSM
-from deepbayesHF.analyzers import massart_bound_check
 
 import tensorflow as tf
 from tensorflow.keras.models import *
@@ -19,24 +19,41 @@ from tensorflow.keras.layers import *
 import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--imnum")
-parser.add_argument("--infer")
+parser.add_argument("--imnum", default=0.0)
+parser.add_argument("--eps", default=0.0)
+parser.add_argument("--lam", default=1.0)
+parser.add_argument("--rob", default=0)
+parser.add_argument("--gpu", nargs='?', default='0,1,2,3,4,5')
+parser.add_argument("--opt")
+parser.add_argument("--width", default=24)
+parser.add_argument("--depth", default=1)
+
 
 args = parser.parse_args()
 imnum = int(args.imnum)
-post_string = str(args.infer)
+eps = float(args.eps)
+lam = float(args.lam)
+optim = str(args.opt)
+rob = int(args.rob)
+width = int(args.width)
+depth = int(args.depth)
+post_string = str(args.opt)
 INDEX = imnum
+
+
 EPSILON = 0/255
-MARGIN = 2.0
-SAMPLES = 750
+MARGIN = 4.0
+SAMPLES = 3
+MAXDEPTH = 3
+
+# 2.5, 750
 # LOAD IN THE DATA
-"""
-(X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
-X_train = X_train/255.
-X_test = X_test/255.
-X_train = X_train.astype("float64").reshape(-1, 28*28)
-X_test = X_test.astype("float64").reshape(-1, 28* 28)
-"""
+
+#(X_train, y_train), (X_test, y_test) = tf.keras.datasets.mnist.load_data()
+#X_train = X_train/255.
+#X_test = X_test/255.
+#X_train = X_train.astype("float64").reshape(-1, 28*28)
+#X_test = X_test.astype("float64").reshape(-1, 28* 28)
 
 X_train = np.load("data/xtrain.npy").astype("float32") + 0.5
 y_train = np.load("data/ytrain.npy")
@@ -45,13 +62,8 @@ y_test = np.load("data/ytest.npy")
 y_train = np.argmax(y_train, axis=1)
 y_test = np.argmax(y_test, axis=1)
 
-#X_train = X_train.reshape(-1, 28*28*3)
-#X_test = X_test.reshape(-1, 28*28*3)
-
-print(np.max(X_train), np.min(X_train))
-
-
 def predicate_safe(iml, imu, ol, ou):
+    return True
     v1 = tf.one_hot(TRUE_VALUE, depth=2)
     v2 = 1 - tf.one_hot(TRUE_VALUE, depth=2)
     v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
@@ -61,65 +73,52 @@ def predicate_safe(iml, imu, ol, ou):
     else:
         return False
 
-# SELECT THE INPUT
-img = np.asarray([X_test[INDEX]])
-#TRUE_VALUE = bayes_model.predict(img) #y_test[INDEX]
+
+def logit_value(iml, imu, ol, ou):
+    v1 = tf.one_hot(TRUE_VALUE, depth=2)
+    v2 = 1 - tf.one_hot(TRUE_VALUE, depth=2)
+    v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+    worst_case = tf.math.add(tf.math.multiply(v2, ou), tf.math.multiply(v1, ol))
+    worst_case = tf.nn.softmax(worst_case)
+    return worst_case[TRUE_VALUE]
+
 
 import numpy as np
 # Load in approximate posterior distribution
-bayes_model = PosteriorModel("Posteriors/%s_small_Posterior_0"%(post_string))
+#bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))
+bayes_model = PosteriorModel("Posteriors/VOGN_small_Posterior_5")
+bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-img = np.asarray([X_test[INDEX]])
-img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+for INDEX in range(10,100):
+    # SELECT THE INPUT
+    img = np.asarray([X_test[INDEX]])
+    #print(img.shape)
+    #sys.exit(0)
+    TRUE_VALUE = y_test[INDEX]
 
-TRUE_VALUE = np.argmax(bayes_model.predict(img)) #y_test[INDEX]
+    import json
+    dir = "LogsVOGN"
+    post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
+    for EPSILON in np.linspace(0.0, 0.5, 26):
+        EPSILON = 1/255
+        img = np.asarray([X_test[INDEX]])
+        img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
+        img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+        p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
+        print("~~~~~~~~~ Safety Probability: ", p_lower)
+        if(p_lower < 0.5):
+            break
+        break
+    break
+    #EPSILON -= 0.01
+    print("Radius: ", eps)
 
-# We start with epsilon = 0.0 and increase it as we go.
-p_lower, _ = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, inflate=2.0)
-print("Initial Safety Probability: ", p_lower)
-dir = "ExperimentalLogs"
-import json
 iterations = 0
-
-record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":EPSILON,  "Iterations":iterations}
-with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:
+record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+with open("%s/%s"%(dir, post_string), 'a') as f:
     json.dump(record, f)
     f.write(os.linesep)
 
-"""
-stepsize = 0.10
-max_eps_veri = 0.0
-p_of_veri = 0.0
-for i in range(2):
-    if(p_lower >= 0.8):
-        max_eps_veri = max(EPSILON, max_eps_veri)
-        p_of_veri = p_lower #max(EPSILON, max_eps_veri)
-        EPSILON *= 1.5
-        img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-        img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
-    else:
-        EPSILON /= 2
-        img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-        img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
-    print("Computing with epsilon: ", EPSILON)
-    print("Stepsize: ", stepsize)
-    p_lower, _ = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, inflate=1.0)
-    print("Probability: ", p_lower)
-    record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":EPSILON, "Iterations":iterations}
-    with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-
-"""
-
-"""
-import logging
-logging.basicConfig(filename="MSELogs/%s_eps.log"%(dataset_string),level=logging.DEBUG)
-print("i#_%s_eps_%s_p_%s"%(INDEX, max_eps_veri, p_of_veri))
-#logging.info("i#_%s_eps_%s\n"%(INDEX, EPSILON))
-logging.info("i#_%s_eps_%s_p_%s"%(INDEX, max_eps_veri, p_of_veri))
-"""
 
 

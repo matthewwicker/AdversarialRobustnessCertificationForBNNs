@@ -15,7 +15,7 @@ from statsmodels.stats.proportion import proportion_confint
 
 def propagate_conv2d(W, b, x_l, x_u, marg=0, b_marg=0):
     marg = tf.divide(marg, 2)
-    b_marg = tf.divide(marg, 2)
+    b_marg = tf.divide(b_marg, 2)
     w_pos = tf.maximum(W+marg, 0)
     w_neg = tf.minimum(W-marg, 0)
     h_l = (tf.nn.convolution(x_l, w_pos) +
@@ -83,6 +83,7 @@ def IBP_prob(model, s0, s1, weights, weight_margin=0, logits=True):
     offset = 0
     for i in range(len(layers)):
         if(len(layers[i].get_weights()) == 0):
+            #print("FLATTENED")
             h_u = model.model.layers[i](h_u)
             h_l = model.model.layers[i](h_l)
             offset += 1
@@ -279,7 +280,11 @@ def compute_probability_subroutine_multiprocess(model, weight_intervals, margin,
     full_p = 1.0 # converted to log probability
     full_p *= np.prod(ps_bias)
     full_p *= np.prod(ps_weight)
-    print("Interval Prob: ", full_p)
+    if(full_p.size != 1):
+#        full_p = np.prod(full_p)
+#        full_p = np.prod(full_p)
+        full_p = np.prod(full_p)
+#        print("Interval Prob: ", full_p)
     return full_p
 
 
@@ -316,6 +321,12 @@ def compute_probability_subroutine(args): #(model, weight_intervals, margin, ver
     full_p *= np.prod(ps_bias)
     full_p *= np.prod(ps_weight)
     #print("Prob: ", full_p)
+    #print("FULL P", full_p)
+    if(full_p.size != 1):
+ #       full_p = np.prod(full_p)
+ #       full_p = np.prod(full_p)
+        full_p = np.prod(full_p)
+ #       print("Interval Prob: ", full_p)
     return full_p
 
 def compute_probability_bonferroni_n(model, weight_intervals, margin, depth, max_depth, current_approx, verbose=True, n_proc=30):
@@ -423,6 +434,7 @@ def compute_decision_bonferroni(model, weight_intervals, values, margin, max_dep
         stage1p.append(result)
     proc_pool.close()
     proc_pool.join()
+    print(stage1p, values)
     d1 = sum(np.multiply(stage1p,values))
     p1 = sum(stage1p)
     print("Depth 1 prob: ", p1, "logit val: ", d1)

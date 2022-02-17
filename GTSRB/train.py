@@ -109,7 +109,7 @@ bayes_model = opt.compile(model, loss_fn=loss, epochs=10, learning_rate=learning
 bayes_model.train(X_train, y_train, X_test, y_test)
 
 # Save your approxiate Bayesian posterior
-bayes_model.save("Posteriors/%s_%s_Posterior_%s"%(optim, model_type, rob))
+bayes_model.save("Posteriors/%s_%s_Posterior3_%s"%(optim, model_type, rob))
 
 
 

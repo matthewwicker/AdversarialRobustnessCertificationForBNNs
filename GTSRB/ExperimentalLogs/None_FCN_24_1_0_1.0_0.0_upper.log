@@ -1,0 +1,17 @@
+{"Index": 0, "Upper": 0.7974438378980594, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 1, "Upper": 0.588582960250135, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 2, "Upper": 0.5952351668387771, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 3, "Upper": 0.5911596142698042, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 4, "Upper": 0.591644312814493, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 5, "Upper": 0.5579861490775216, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 6, "Upper": 0.5694604222607356, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/nonsense"}
+{"Index": 0, "Upper": 0.5911006965934482, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 1, "Upper": 0.590962594210026, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 2, "Upper": 0.5655330537549319, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 3, "Upper": 0.5903591638642313, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 4, "Upper": 0.5520197951728676, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 5, "Upper": 0.5911388565114138, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 6, "Upper": 0.5611577731542072, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 7, "Upper": 0.5527090704654444, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 8, "Upper": 0.5908076095904958, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 9, "Upper": 0.556251133337875, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}

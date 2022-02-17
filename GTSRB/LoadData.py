@@ -4,7 +4,7 @@ import cv2
 import pickle
 from keras.utils import np_utils
 
-def load(training_file, validation_file, testing_file):
+def load(training_file, validation_file, testing_file, num_classes=2):
     with open(training_file, mode='rb') as f:
         train = pickle.load(f)
     with open(validation_file, mode='rb') as f:
@@ -59,8 +59,10 @@ def load(training_file, validation_file, testing_file):
     numeric = np.argmax(y_train,axis=1)
     counts = np.bincount(numeric)
     classes_to_use = counts.argsort()[-10:][::-1]
-    classes_to_use  = [2,25] # We preselect classes so that they are the most different
-    desired_classes = 2  # We reset the class counter
+    print("Most represented classes: ", classes_to_use)
+    classes_to_use  = [2,25,10] # We preselect classes so that they are the most different
+    desired_classes = num_classes  # We reset the class counter
+    classes_to_use = classes_to_use[0:num_classes]
 
     def filter_by_class(x_data, y_data):
         X = []
@@ -77,3 +79,4 @@ def load(training_file, validation_file, testing_file):
     X_valid, y_valid = filter_by_class(X_valid, y_valid)
     X_test, y_test = filter_by_class(X_test, y_test)
     return X_train, y_train, X_test, y_test
+
