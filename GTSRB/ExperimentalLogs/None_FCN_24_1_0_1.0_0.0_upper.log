@@ -15,3 +15,13 @@
 {"Index": 7, "Upper": 0.5527090704654444, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
 {"Index": 8, "Upper": 0.5908076095904958, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
 {"Index": 9, "Upper": 0.556251133337875, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/usa"}
+{"Index": 0, "Upper": 0.7169147376963518, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 1, "Upper": 0.5425728700937674, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 2, "Upper": 0.8088658601906464, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 3, "Upper": 0.6448429585845732, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 4, "Upper": 0.5877993669460242, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 5, "Upper": 0.5050181080662077, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 6, "Upper": 0.8532479596155235, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 7, "Upper": 0.589053443332474, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 8, "Upper": 0.7007444668746008, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 9, "Upper": 0.8478076949112884, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}

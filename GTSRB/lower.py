@@ -41,7 +41,7 @@ post_string = str(args.opt)
 INDEX = imnum
 
 
-EPSILON = 0/255
+EPSILON = 1/255
 MARGIN = 4.0
 SAMPLES = 3
 MAXDEPTH = 3
@@ -89,7 +89,7 @@ import numpy as np
 bayes_model = PosteriorModel("Posteriors/VOGN_small_Posterior_5")
 bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-for INDEX in range(10,100):
+for INDEX in range(0,10):
     # SELECT THE INPUT
     img = np.asarray([X_test[INDEX]])
     #print(img.shape)
@@ -97,28 +97,20 @@ for INDEX in range(10,100):
     TRUE_VALUE = y_test[INDEX]
 
     import json
-    dir = "LogsVOGN"
+    dir = "ExperimentalLogs"
     post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
-    for EPSILON in np.linspace(0.0, 0.5, 26):
-        EPSILON = 1/255
-        img = np.asarray([X_test[INDEX]])
-        img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
-        img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
-        p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
-        print("~~~~~~~~~ Safety Probability: ", p_lower)
-        if(p_lower < 0.5):
-            break
-        break
-    break
-    #EPSILON -= 0.01
-    print("Radius: ", eps)
+    #for EPSILON in np.linspace(0.0, 0.5, 26):
+    #EPSILON = 1/255
+    img = np.asarray([X_test[INDEX]])
+    img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
+    img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+    p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
 
-iterations = 0
-record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-with open("%s/%s"%(dir, post_string), 'a') as f:
-    json.dump(record, f)
-    f.write(os.linesep)
+    record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+    with open("%s/%s"%(dir, post_string), 'a') as f:
+        json.dump(record, f)
+        f.write(os.linesep)
 
 
 

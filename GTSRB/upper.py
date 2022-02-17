@@ -59,25 +59,26 @@ MAXDEPTH = 3
 
 #X_train = np.load("data/xtrain.npy").astype("float32") + 0.5
 #y_train = np.load("data/ytrain.npy")
-#X_test = np.load("data/xtest.npy").astype("float32") + 0.5
+X_test = np.load("data/xtest.npy").astype("float32") + 0.5
 #y_test = np.load("data/ytest.npy")
 #y_train = np.argmax(y_train, axis=1)
 #y_test = np.argmax(y_test, axis=1)
 
 from PIL import Image
-#benchmark = "nonsense"
-benchmark = 'OOD/' + benchmark
-image_paths = [f for f in os.listdir(benchmark) if os.path.isfile(os.path.join(benchmark, f))]
 
-images = []
-# Open the image form working directory
-for i in image_paths:
-    image = Image.open(benchmark+'/'+i)
-    # summarize some details about the image
-    image = np.asarray(image)
-    print(image.shape)
-    image = image[:, : ,0:3]
-    images.append(image)
+if(benchmark == 'gtsrb'):
+    images = X_test
+else:
+    benchmark = 'OOD/' + benchmark
+    image_paths = [f for f in os.listdir(benchmark) if os.path.isfile(os.path.join(benchmark, f))]
+    images = []
+    # Open the image form working directory
+    for i in image_paths:
+        image = Image.open(benchmark+'/'+i)
+        # summarize some details about the image
+        image = np.asarray(image)
+        image = image[:, : ,0:3]
+        images.append(image)
 
 def predicate_safe(iml, imu, ol, ou):
     return True
