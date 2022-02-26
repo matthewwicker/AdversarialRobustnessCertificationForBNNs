@@ -25,3 +25,16 @@
 {"Index": 7, "Upper": 0.589053443332474, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
 {"Index": 8, "Upper": 0.7007444668746008, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
 {"Index": 9, "Upper": 0.8478076949112884, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "gtsrb"}
+{"Index": 0, "Upper": 0.5838968210736762, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 1, "Upper": 0.5849303000911987, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 2, "Upper": 0.5892775894394424, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 3, "Upper": 0.5901279409143119, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 4, "Upper": 0.5895539050614582, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 5, "Upper": 0.5897611640155251, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 5, "Upper": 0.5694249855404341, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 5, "Upper": 0.5888015691743903, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 6, "Upper": 0.5896873659401697, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 7, "Upper": 0.5894322677842301, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 8, "Upper": 0.5901027932192369, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 9, "Upper": 0.5889164635250492, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "random"}
+{"Index": 0, "Upper": 0.5430017649273846, "Samples": 3, "Margin": 4.0, "MaxEps": 0.00392156862745098, "Depth": 3, "Data": "OOD/german"}

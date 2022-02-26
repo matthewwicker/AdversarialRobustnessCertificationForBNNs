@@ -68,6 +68,10 @@ from PIL import Image
 
 if(benchmark == 'gtsrb'):
     images = X_test
+elif(benchmark == 'random'):
+    images = []
+    for i in range(10):
+        images.append(np.random.uniform(0,1,(28,28,3)))
 else:
     benchmark = 'OOD/' + benchmark
     image_paths = [f for f in os.listdir(benchmark) if os.path.isfile(os.path.join(benchmark, f))]

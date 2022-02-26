@@ -54,7 +54,7 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
         self.U_metric = tf.keras.metrics.Mean(name="U_metric")
         self.q = self.posterior_mean
         self.current_q = copy.deepcopy(self.q)
-        print(self.q)
+        #print(self.q)
         self.m = kwargs.get('m', 0.1) #2.0 is optimal for normal training
         self.num_rets = [0] # number of times each iterate in the chain has appeared 
         self.iterate = 0
@@ -239,15 +239,9 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
     def train(self, X_train, y_train, X_test=None, y_test=None):
         # We generate this only to speed up parallel computations of the test statistics
         # if there are any to compute
-        test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test)).batch(256)
+        print(np.shape(X_train), np.shape(y_train))
+        test_ds = tf.data.Dataset.from_tensor_slices((X_test, np.asarray([y_test]) ))
     
-        # Open with a user warning about potential memory constraints of their process:
-        s = (self.burn_in + self.epochs) * (sys.getsizeof(self.model.get_weights())/1000000)
-        warn = """BayesKeras Warning: HMC is a memory hungry optimizer. 
-         Given you system and parameters of this training run,
-         we expect your system to need %s MB of available memory"""%(s) 
-        print(warn)
-
         if(self.robust_linear):
             self.max_eps = self.epsilon
             self.epsilon = 0.0
