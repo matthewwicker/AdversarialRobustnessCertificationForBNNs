@@ -133,7 +133,10 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
         # Define the GradientTape context
         with tf.GradientTape(persistent=True) as tape:   # Below we add an extra variable for IBP
             tape.watch(self.posterior_mean) 
-            predictions = self.model(features)
+            try:
+                predictions = self.model(features)
+            except:
+                predictions = self.model.call(features)
             if(self.robust_train == 0):
                 loss = losses.normal_potential_energy(labels, predictions, self.prior_mean,
                                                self.prior_var, self.q, self.loss_func)
@@ -210,7 +213,11 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
         return self.posterior_mean, self.posterior_var
 
     def evaluate_U(self, features, labels):
-        predictions = self.model(features)
+        try:
+            predictions = self.model(features)
+        except:
+            predictions = self.model.predict(features) #(np.asarray([features]))
+
         if(self.robust_train == 1): # We only check with IBP if we need to
             logit_l, logit_u = analyzers.IBP(self, features, self.model.get_weights(), self.epsilon)
             #logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, 0.0)
@@ -241,7 +248,8 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
         # if there are any to compute
         print(np.shape(X_train), np.shape(y_train))
         test_ds = tf.data.Dataset.from_tensor_slices((X_test, np.asarray([y_test]) ))
-    
+        #test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test ))
+
         if(self.robust_linear):
             self.max_eps = self.epsilon
             self.epsilon = 0.0
