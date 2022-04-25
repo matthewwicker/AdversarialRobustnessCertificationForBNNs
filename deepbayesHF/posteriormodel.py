@@ -53,9 +53,9 @@ class PosteriorModel():
             self.frequency = self.frequency/np.sum(self.frequency)
             self.num_post_samps = len(self.frequency)
         # Read in serialized information from the posterior run: including some domain information
-        info_dict = np.load(path_to_model+'/info.pkl',allow_pickle='TRUE')
-        self.input_upper = info_dict['input_upper']
-        self.input_lower = info_dict['input_lower']
+        #info_dict = np.load(path_to_model+'/info.pkl',allow_pickle='TRUE')
+        #self.input_upper = info_dict['input_upper']
+        #self.input_lower = info_dict['input_lower']
 
     def sample(self, inflate=1.0):
         """Returns a list of size 2x`n_layers` (a weight followed by a bias for each layer).
@@ -64,9 +64,10 @@ class PosteriorModel():
         :return: A list of the form [weight, bias, ...] for every layer in the architecture.
         :rtype: list
         """
-        if(self.det):
-            return self.model.get_weights()
-        elif(self.sample_based == False):
+        #if(self.det):
+        #    return self.model.get_weights()
+        if(self.sample_based == False):
+            print("Sampling normally")
             sampled_weights = []
             for i in range(len(self.posterior_mean)):
                 #sampled_weights.append(np.random.normal(loc=self.posterior_mean[i],
@@ -75,6 +76,7 @@ class PosteriorModel():
                                                     scale=inflate*self.posterior_var[i]))
         elif(self.sample_based):
             index = np.random.choice(range(self.num_post_samps), p=self.frequency)
+            print("sampling %s"%(index))
             sampled_weights = np.load(self.path_to_model+"/samples/sample_%s.npy"%(index), allow_pickle=True)
         return sampled_weights
 

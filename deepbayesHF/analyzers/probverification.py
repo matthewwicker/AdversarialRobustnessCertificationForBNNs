@@ -33,21 +33,26 @@ def propagate_interval(W, b, x_l, x_u, marg=0, b_marg=0):
     b_marg = tf.divide(b_marg, 2)
     x_mu = tf.cast(tf.divide(tf.math.add(x_u, x_l), 2), dtype=tf.float64)
     x_r =  tf.cast(tf.divide(tf.math.subtract(x_u, x_l), 2), dtype=tf.float64)
-    W_mu = tf.cast(W, dtype=tf.float64)
-    W_r =  tf.cast(marg, dtype=tf.float64)
     if(type(marg) == int):
         W_r = 0.0 * W_mu
+    W_mu = tf.cast(W, dtype=tf.float64)
+    W_r =  tf.cast(marg, dtype=tf.float64)
+    b = tf.cast(b, dtype=tf.float64)
+    b_marg = tf.cast(b_marg, dtype=tf.float64)
     b_u =  tf.cast(b + b_marg, dtype=tf.float64)
     b_l =  tf.cast(b - b_marg, dtype=tf.float64)
     #h_mu = tf.math.add(tf.matmul(x_mu, W_mu), b_mu)
     h_mu = tf.matmul(x_mu, W_mu)
     x_rad = tf.matmul(x_r, tf.math.abs(W_mu))
-    W_rad = tf.matmul(tf.abs(x_mu), W_r)
-    Quad = tf.matmul(tf.abs(x_r), tf.abs(W_r))
+    try:
+        W_rad = tf.matmul(tf.abs(x_mu), W_r)
+        Quad = tf.matmul(tf.abs(x_r), tf.abs(W_r))
+    except:
+        W_rad = 0.0
+        Quad = 0.0   
     h_u = tf.add(tf.add(tf.add(tf.add(h_mu, x_rad), W_rad), Quad), b_u)
     h_l = tf.add(tf.subtract(tf.subtract(tf.subtract(h_mu, x_rad), W_rad), Quad), b_l)
     return h_l, h_u
-
 
 def propagate_interval_exact(W, b, x_l, x_u, marg=0, b_marg=0):
     """
@@ -103,6 +108,69 @@ def IBP_prob(model, s0, s1, weights, weight_margin=0, logits=True):
             h_l = model.model.layers[i].activation(h_l)
             h_u = model.model.layers[i].activation(h_u)
     return h_l, h_u
+
+
+def IBP_samp(model, s0, s1, weights, weight_margin=0, logits=True):
+    h_l = s0
+    h_u = s1
+    layers = model.model.layers
+    offset = 0
+    for i in range(len(layers)):
+        if(len(layers[i].get_weights()) == 0):
+            #print("FLATTENED")
+            h_u = model.model.layers[i](h_u)
+            h_l = model.model.layers[i](h_l)
+            offset += 1
+            continue
+        w, b = weights[2*(i-offset)], weights[(2*(i-offset))+1]
+        sigma = weights[2*(i-offset)] #model.posterior_var[2*(i-offset)]
+        b_sigma = weights[2*(i-offset)+1] #model.posterior_var[2*(i-offset)+1]
+        marg = weight_margin*sigma
+        b_marg = weight_margin*b_sigma
+        if(len(w.shape) == 2):
+            h_l, h_u = propagate_interval(w, b, h_l, h_u, marg=marg, b_marg=b_marg)
+            activate = True
+        elif(len(w.shape) == 4):
+            h_l, h_u = propagate_conv2d(w, b, h_l, h_u, marg=marg, b_marg=b_marg)
+            activate = True
+        if(i < len(layers)-1):
+            h_l = model.model.layers[i].activation(h_l)
+            h_u = model.model.layers[i].activation(h_u)
+    if(not logits):
+        h_l = model.model.layers[-1].activation(h_l)
+        h_u = model.model.layers[-1].activation(h_u)
+        return h_l, h_u
+    return h_l, h_u
+
+def pIBP(model, inp_l, inp_u, weights, predict=False):
+    #if(predict == False):
+    #    h_u = tf.clip_by_value(tf.math.add(inp, eps), 0.0, 1.0)
+    #    h_l = tf.clip_by_value(tf.math.subtract(inp, eps), 0.0, 1.0)
+    #else:
+    h_u = inp_u
+    h_l = inp_l
+    layers = model.model.layers
+    offset = 0
+    for i in range(len(layers)):
+        if(len(layers[i].get_weights()) == 0):
+            h_u = model.model.layers[i](h_u)
+            h_l = model.model.layers[i](h_l)
+            offset += 1
+            continue
+        w, b = weights[2*(i-offset)], weights[(2*(i-offset))+1]
+        if(len(w.shape) == 2):
+            h_l, h_u = propagate_interval_exact(w, b, h_l, h_u)
+            activate = True
+        #elif(len(w.shape) == 4):
+        #    h_l, h_u = propagate_conv2d(w, b, h_l, h_u)
+        #    activate = True
+        if(predict == False and i >= len(layers)-1):
+            continue
+        else:
+            h_l = model.model.layers[i].activation(h_l)
+            h_u = model.model.layers[i].activation(h_u)
+    return h_l, h_u
+
 
 
 """
@@ -491,8 +559,11 @@ def decision_veri(model, s0, s1, w_marg, samples, predicate, value, i0=0, depth=
     logit_values = []
     for i in trange(samples, desc="Checking Samples"):
         model.model.set_weights(model.sample())
-        ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg)
+        ol, ou = IBP_prob(model, s0, s1, model.model.get_weights(), w_marg, logits=True)
         #if(predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))):
+        #print("IS THIS GETTING PRINTED?")
+        val = value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
+        print("-- ", val)
         logit_values.append(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
         safe_weights.append(model.model.get_weights())
     print("Found %s safe intervals"%(len(safe_weights)))
@@ -544,4 +615,37 @@ def prob_veri_upper(model, s0, s1, w_marg, samples, predicate, depth=4, loss_fn=
     #p = compute_probability(model, np.swapaxes(np.asarray(safe_weights),1,0), w_marg)
     p = compute_probability_bonferroni(model, safe_weights, w_marg, max_depth=depth)
     return p #, np.squeeze(safe_outputs)
+
+def prob_veri_samp(model, s0, s1, samples, predicate, y_scaler, i0=0):
+    #print("Verification got inputs: ", s0, s1)
+    #print("Given states 1: ", np.squeeze(s0)[0:2], np.squeeze(s1)[0:2])
+    probability = 0
+    num_samples = sum(model.frequency)
+    num_unique = len(model.frequency)
+    safe_weights = []
+    outs = []
+    for i in trange(min(len(model.frequency), samples), desc="Checking Samples", bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'):
+        loaded_weights = np.load(model.path_to_model+"/samples/sample_%s.npy"%(i), allow_pickle=True)
+        model.model.set_weights(loaded_weights)
+        ol, ou = IBP_samp(model, s0, s1, loaded_weights, weight_margin=0.0, logits=False)
+        if(predicate(np.squeeze(s0), np.squeeze(s1), np.squeeze(lower), np.squeeze(upper))):
+            outs.append([lower,upper])
+            probability += (model.frequency[i]/num_samples)
+            #print("Adding safe probability: ", (model.frequency[i]/num_samples))
+    return probability, np.squeeze(outs)
+
+def decision_veri_samp(model, s0, s1, w_marg, samples, predicate, value, i0=0, depth=4):
+    num_samples = model.num_post_samps
+    outval = 0
+    for i in trange(min(len(model.frequency), len(model.frequency)), desc="Checking Samples", bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'):
+        loaded_weights = np.load(model.path_to_model+"/samples/sample_%s.npy"%(i), allow_pickle=True)
+        model.model.set_weights(loaded_weights)
+        ol, ou = IBP_samp(model, s0, s0, loaded_weights, weight_margin=0.0, logits=True)
+        #print(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+        outval += model.frequency[i]  * value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
+    print("Done with DecVeriHMC", outval)
+    #print("Found %s safe intervals"%(len(safe_weights)))
+    #logit_values = np.asarray(logit_values)
+    #p = probability #compute_decision_bonferroni(model, safe_weights, logit_values, w_marg, max_depth=depth, y_inf=0.0)
+    return outval
 

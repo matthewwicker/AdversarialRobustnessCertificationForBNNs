@@ -247,8 +247,8 @@ class HamiltonianMonteCarlo(optimizer.Optimizer):
         # We generate this only to speed up parallel computations of the test statistics
         # if there are any to compute
         print(np.shape(X_train), np.shape(y_train))
-        test_ds = tf.data.Dataset.from_tensor_slices((X_test, np.asarray([y_test]) ))
-        #test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test ))
+        #test_ds = tf.data.Dataset.from_tensor_slices((X_test, np.asarray([y_test]) ))
+        test_ds = tf.data.Dataset.from_tensor_slices((X_test, y_test ))
 
         if(self.robust_linear):
             self.max_eps = self.epsilon

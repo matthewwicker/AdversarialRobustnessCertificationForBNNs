@@ -1,3 +1,4 @@
+MAX_SAMP = float('inf')
 import numpy as np
 import math
 import tensorflow as tf
@@ -114,7 +115,7 @@ if len(sys.argv) > 2:
     print("Verifying %s of %s inputs"%(len(inputs), len(classes)))
     bayes_model = PosteriorModel("Posteriors/ROB_HCAS_BNN_%s_%s"%(pra, tau))
 
-    for i in range(len(inputs)):
+    for i in range(min(len(inputs), MAX_SAMP)):
         INDEX = inputs[i]
         TRUE_VALUE = classes[INDEX]
         EPSILON = 0.025

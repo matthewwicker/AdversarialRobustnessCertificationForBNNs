@@ -59,9 +59,12 @@ class Optimizer(ABC):
         # Right now I only have one accessory metric. Will come back and variably
         # many later. 
         if(self.mode == 'classification'):
-            self.train_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="train_acc"))
-            self.valid_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="valid_acc"))
-            self.extra_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="extra_acc"))
+            #self.train_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="train_acc"))
+            #self.valid_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="valid_acc"))
+            #self.extra_metric = kwargs.get('metric', tf.keras.metrics.SparseCategoricalAccuracy(name="extra_acc"))
+            self.train_metric = kwargs.get('metric', tf.keras.metrics.CategoricalAccuracy(name="train_acc"))
+            self.valid_metric = kwargs.get('metric', tf.keras.metrics.CategoricalAccuracy(name="valid_acc"))
+            self.extra_metric = kwargs.get('metric', tf.keras.metrics.CategoricalAccuracy(name="extra_acc"))
 
         if(self.mode == 'regression'):
             self.train_metric = kwargs.get('metric', tf.keras.metrics.RootMeanSquaredError(name="train_mse"))

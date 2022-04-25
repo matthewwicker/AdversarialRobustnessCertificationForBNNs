@@ -7,3 +7,6 @@ from .sgd import StochasticGradientDescent
 from .swag import StochasticWeightAveragingGaussian
 from .hmc import HamiltonianMonteCarlo
 from .adam import Adam
+
+from .phmc import PriorHamiltonianMonteCarlo
+from .phmc import PriorHamiltonianMonteCarlo as PHMC

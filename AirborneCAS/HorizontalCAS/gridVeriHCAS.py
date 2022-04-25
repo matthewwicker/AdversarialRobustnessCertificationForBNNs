@@ -1,3 +1,4 @@
+#HMC = False
 import numpy as np
 import math
 import tensorflow as tf
@@ -14,9 +15,6 @@ sys.path.append('../../')
 import deepbayesHF
 from deepbayesHF import optimizers
 from deepbayesHF import PosteriorModel
-from deepbayesHF.analyzers import prob_veri
-from deepbayesHF.analyzers import decision_veri
-
 
 os.environ['CUDA_VISIBLE_DEVICES'] = "-1"
 
@@ -40,6 +38,16 @@ if len(sys.argv) > 2:
     phi = int(sys.argv[3])
     p_concur = int(sys.argv[4])
     n_concur = int(sys.argv[5])
+    HMC = bool(int(sys.argv[6]))
+    for i in range(100):
+        print(HMC)
+    if(HMC):
+        from deepbayesHF.analyzers import prob_veri_samp as prob_veri
+        from deepbayesHF.analyzers import decision_veri_samp as decision_veri 
+    else:
+        from deepbayesHF.analyzers import prob_veri
+        from deepbayesHF.analyzers import decision_veri  
+
     gpu = -1
     print("Verifying the following: ")
     print("Posterior Path: \t Posteriors/HCAS_BNN_%s_%s"%(pra, tau))
@@ -117,13 +125,18 @@ if len(sys.argv) > 2:
 
 
     print("Setting up Verification")
-    bayes_model = PosteriorModel("Posteriors/ROB_HCAS_BNN_%s_%s"%(pra, tau))
-
+    if(HMC):
+        print("LOADING HMC")
+        bayes_model = PosteriorModel("Posteriors/HMC_HCAS_BNN_%s_%s"%(pra, tau))
+    else:
+        bayes_model = PosteriorModel("Posteriors/CLS_HCAS_BNN_%s_%s"%(pra, tau))
     mins = np.min(X_train, axis=0)
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
-    radi = ((maxs-mins)/desc)/6
-
+    if(HMC):
+        radi = ((maxs-mins)/desc)/10
+    else:
+        radi = ((maxs-mins)/desc)/10
     inps = []
     lowers = []
     uppers = []
@@ -159,12 +172,18 @@ if len(sys.argv) > 2:
         inp_lower = np.asarray([lowers[i]])
 
         p_lower = decision_veri(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, predicate=phi_n, depth=MAXDEPTH, value=logit_value)
+        p_lower = float(p_lower)
         print("Initial Safety Probability: ", p_lower)
 
         #Save result to log files
         record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
-        post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
-        with open("%s/%s_lower.log"%("GridDecLogs", post_string), 'a') as f:
+        if(HMC):
+            post_string = "HMC_Bounds_%s_%s_%s"%(pra, tau, phi)
+        else:
+            post_string = "VIC_Bounds_%s_%s_%s"%(pra, tau, phi)
+        #for i in range(10):
+        print(post_string, record)
+        with open("%s/%s_lower.log"%("CompareLogs", post_string), 'a') as f:
             json.dump(record, f)
             f.write(os.linesep)
 
