@@ -129,7 +129,7 @@ if len(sys.argv) > 2:
         print("LOADING HMC")
         bayes_model = PosteriorModel("Posteriors/HMC_HCAS_BNN_%s_%s"%(pra, tau))
     else:
-        bayes_model = PosteriorModel("Posteriors/CLS_HCAS_BNN_%s_%s"%(pra, tau))
+        bayes_model = PosteriorModel("Posteriors/ROB_HCAS_BNN_%s_%s"%(pra, tau))
     mins = np.min(X_train, axis=0)
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
@@ -180,7 +180,7 @@ if len(sys.argv) > 2:
         if(HMC):
             post_string = "HMC_Bounds_%s_%s_%s"%(pra, tau, phi)
         else:
-            post_string = "VIC_Bounds_%s_%s_%s"%(pra, tau, phi)
+            post_string = "VIR_Bounds_%s_%s_%s"%(pra, tau, phi)
         #for i in range(10):
         print(post_string, record)
         with open("%s/%s_lower.log"%("CompareLogs", post_string), 'a') as f:
