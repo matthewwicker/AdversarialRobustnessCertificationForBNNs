@@ -67,7 +67,7 @@ class PosteriorModel():
         #if(self.det):
         #    return self.model.get_weights()
         if(self.sample_based == False):
-            print("Sampling normally")
+            #print("Sampling normally")
             sampled_weights = []
             for i in range(len(self.posterior_mean)):
                 #sampled_weights.append(np.random.normal(loc=self.posterior_mean[i],
