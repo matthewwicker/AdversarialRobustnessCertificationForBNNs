@@ -150,9 +150,9 @@ if len(sys.argv) > 2:
     maxs = np.max(X_train, axis=0)
     desc = [25,5,5]
     if(HMC):
-        radi = ((maxs-mins)/desc)/100
+        radi = ((maxs-mins)/desc)/20
     else:
-        radi = ((maxs-mins)/desc)/100
+        radi = ((maxs-mins)/desc)/20
     inps = []
     lowers = []
     uppers = []
