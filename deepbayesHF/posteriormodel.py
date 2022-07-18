@@ -54,8 +54,8 @@ class PosteriorModel():
             self.num_post_samps = len(self.frequency)
         # Read in serialized information from the posterior run: including some domain information
         #info_dict = np.load(path_to_model+'/info.pkl',allow_pickle='TRUE')
-        #self.input_upper = info_dict['input_upper']
-        #self.input_lower = info_dict['input_lower']
+        self.input_upper = 1.0 #info_dict['input_upper']
+        self.input_lower = 0.0 #info_dict['input_lower']
 
     def sample(self, inflate=1.0):
         """Returns a list of size 2x`n_layers` (a weight followed by a bias for each layer).

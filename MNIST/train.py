@@ -52,7 +52,10 @@ X_test = X_test.astype("float32").reshape(-1, 28* 28)
 #y_train = y_train[0:10000]
 model = Sequential()
 for i in range(depth):
-    model.add(Dense(width, activation="relu", input_shape=(1, 28*28)))
+    if(i == 0):
+        model.add(Dense(width, activation="relu", input_shape=(None, 28*28)))
+    else:
+        model.add(Dense(width, activation="relu"))
 model.add(Dense(10, activation="softmax"))
 
 inf = 2

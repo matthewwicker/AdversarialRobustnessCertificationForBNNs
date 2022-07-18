@@ -140,7 +140,10 @@ class Optimizer(ABC):
 
     def model_validate(self, features, labels):
         #self.model.set_weights(self.sample())
-        predictions = self.model(features)
+        try:
+            predictions = self.model(features)
+        except:
+            predictions = self.model(np.asarray([features]))
         if(self.robust_train == 1 or self.robust_train == 5): # We only check with IBP if we need to 
             logit_l, logit_u = analyzers.IBP(self, features, self.model.get_weights(), self.epsilon)
             #logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, 0.0)
@@ -168,8 +171,12 @@ class Optimizer(ABC):
         else:
             v_loss = self.loss_func(labels, predictions)
             worst_case = predictions
-        self.valid_metric(labels, predictions)
-        self.valid_loss(v_loss)
+        try:
+            self.valid_metric(labels, predictions)
+            self.valid_loss(v_loss)
+        except:
+            #print("Skipping metric computation due to error")
+            self.valid_loss(v_loss)
         #self.valid_rob(labels, worst_case)
 
     def logging(self, loss, acc, val_loss, val_acc, epoch):

@@ -457,7 +457,7 @@ def compute_decision_bonferroni_n(model, weight_intervals, values, margin, depth
     for combination in itertools.combinations(range(len(weight_intervals)), depth):
         # intersection of first two
         if(y_inf == 1.0): # upperbounding
-            val_l = min(values[combination[0]], values[combination[1]])
+            val_l = max(values[combination[0]], values[combination[1]])
         else: # lowerbounding
             val_l = max(values[combination[0]], values[combination[1]])
         int_l, int_u = intersect_intervals(weight_intervals[combination[0]], weight_intervals[combination[1]], margin, model.posterior_var)
@@ -514,7 +514,8 @@ def compute_decision_bonferroni(model, weight_intervals, values, margin, max_dep
     if(max_depth >= 3):
         for i in range(3, max_depth+1):
             p_approx, d_approx = compute_decision_bonferroni_n(model, weight_intervals, values, margin, i, max_depth, p_approx, d_approx, verbose, n_proc)
-            print("Got this approximation: ", p_approx)
+            print("Got this p approx: ", p_approx)
+            print("Got this d approx: ", d_approx)
         return d_approx*p_approx + ((1-p_approx)*y_inf)
     else:
         return d_approx*p_approx + ((1-p_approx)*y_inf)

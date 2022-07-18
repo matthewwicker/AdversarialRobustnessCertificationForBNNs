@@ -38,12 +38,11 @@ if len(sys.argv) > 2:
     phi = int(sys.argv[3])
     p_concur = int(sys.argv[4])
     n_concur = int(sys.argv[5])
-    HMC = bool(int(sys.argv[6]))
-    for i in range(100):
-        print(HMC)
+    HMC = True #bool(int(sys.argv[6]))
     if(HMC):
         from deepbayesHF.analyzers import prob_veri_samp as prob_veri
         from deepbayesHF.analyzers import decision_veri_samp as decision_veri 
+        from deepbayesHF.analyzers import decision_veri_samp as decision_veri_upper 
     else:
         from deepbayesHF.analyzers import prob_veri
         from deepbayesHF.analyzers import decision_veri  
@@ -123,6 +122,19 @@ if len(sys.argv) > 2:
         worst_case = tf.nn.softmax(worst_case)
         return worst_case[TRUE_VALUE]
 
+    def phi_n_upper(iml, imu, ol, ou):
+        return True
+
+
+    def logit_value_upper(iml, imu, ol, ou):
+        v1 = tf.one_hot(TRUE_VALUE, depth=numOut)
+        v2 = 1 - tf.one_hot(TRUE_VALUE, depth=numOut)
+        v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
+        best_case = tf.math.add(tf.math.multiply(v1, ou), tf.math.multiply(v2, ol))
+        best_case = tf.nn.softmax(best_case)
+        return best_case[TRUE_VALUE]
+
+
 
     print("Setting up Verification")
     if(HMC):
@@ -178,9 +190,27 @@ if len(sys.argv) > 2:
         #Save result to log files
         record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
         if(HMC):
-            post_string = "HMC_Bounds_%s_%s_%s"%(pra, tau, phi)
+            post_string = "NHB_Bounds_%s_%s_%s"%(pra, tau, phi)
         else:
-            post_string = "VIR_Bounds_%s_%s_%s"%(pra, tau, phi)
+            post_string = "NVB_Bounds_%s_%s_%s"%(pra, tau, phi)
+        #for i in range(10):
+        print(post_string, record)
+        with open("%s/%s_lower.log"%("CompareLogs", post_string), 'a') as f:
+            json.dump(record, f)
+            f.write(os.linesep)
+
+
+        p_upper = decision_veri_upper(bayes_model, inp_lower, inp_upper, MARGIN, SAMPLES, 
+                                      predicate=phi_n_upper, depth=MAXDEPTH, value=logit_value_upper)
+        p_upper = float(p_upper)
+        print("Initial Safety Probability: ", p_upper)
+
+        #Save result to log files
+        record = {"Index":a+i, "Upper":p_upper, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
+        if(HMC):
+            post_string = "NHB_Bounds_%s_%s_%s"%(pra, tau, phi)
+        else:
+            post_string = "NVB_Bounds_%s_%s_%s"%(pra, tau, phi)
         #for i in range(10):
         print(post_string, record)
         with open("%s/%s_lower.log"%("CompareLogs", post_string), 'a') as f:

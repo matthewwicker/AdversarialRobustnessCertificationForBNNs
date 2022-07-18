@@ -105,6 +105,7 @@ if len(sys.argv) > 1:
     desc = [15,10,10,5]
     radi = ((maxs-mins)/desc)/4
 
+    print("Radius: ", radi)
     inps = []
     lowers = []
     uppers = []
@@ -126,26 +127,28 @@ if len(sys.argv) > 1:
     #y_pred = bayes_model.predict(X_train)
     y_pred = np.squeeze(y_pred)
     classes = np.argmax(y_pred, axis=1)
-    for i in classes:
-        print(i)
-        if(i != 0):
-            print(i)
-    sys.exit(0)
+    #for i in classes:
+    #    print(i)
+    #    if(i != 0):
+    #        print(i)
+    #sys.exit(0)
     indforprop = []
-    for i in range(len(y_train)):
-        if(np.argmax(y_train[i]) != 0):
-            y_p = bayes_model.predict(np.asarray([X_train[i]]))
-            print(np.argmax(y_train[i]), np.argmax(y_p)) 
-    print(np.argmax(y_train, axis=1))
-    print(classes)
-    sys.exit(0)
+    #for i in range(len(y_train)):
+    #    if(np.argmax(y_train[i]) != 0):
+    #        y_p = bayes_model.predict(np.asarray([X_train[i]]))
+    #        print(np.argmax(y_train[i]), np.argmax(y_p)) 
+    #print(np.argmax(y_train, axis=1))
+    #print(classes)
+    #sys.exit(0)
 
     for i in range(len(inps)):
         #print(classes[i], CLS_VALUES)
         if(classes[i] in CLS_VALUES):
             indforprop.append(i)
     print("Found this many for verification: ", len(indforprop))
-
+    import time
+    start = time.time()
+    veris_done = 0
     for i in indforprop:
         TRUE_VALUE = classes[i]
         MAXDEPTH = 3
@@ -159,10 +162,14 @@ if len(sys.argv) > 1:
         print("Initial Safety Probability: ", p_lower)
 
         #Save result to log files
-        record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
-        post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
-        with open("%s/%s_lower.log"%("GridLogs", post_string), 'a') as f:
-            json.dump(record, f)
-            f.write(os.linesep)
-
-
+        #record = {"Index":a+i, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "Epsilon":-1, "Depth":MAXDEPTH, "PRA":pra, "TAI":tau, "PHI":phi}
+        #post_string = "HCAS_Bounds_%s_%s_%s"%(pra, tau, phi)
+        #with open("%s/%s_lower.log"%("GridLogs", post_string), 'a') as f:
+        #    json.dump(record, f)
+        #    f.write(os.linesep)
+        veris_done += 1
+        if(veris_done == 10):
+            break
+    end = time.time()
+    print("Time for single veri: ", (end - start)/veris_done)
+    print("Time for this segment: ", ((end - start)/veris_done)*len(indforprop))
