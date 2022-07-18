@@ -38,7 +38,7 @@ if len(sys.argv) > 2:
     phi = int(sys.argv[3])
     p_concur = int(sys.argv[4])
     n_concur = int(sys.argv[5])
-    HMC = False #bool(int(sys.argv[6]))
+    HMC = True #bool(int(sys.argv[6]))
     if(HMC):
         from deepbayesHF.analyzers import prob_veri_samp as prob_veri
         from deepbayesHF.analyzers import decision_veri_samp as decision_veri 
