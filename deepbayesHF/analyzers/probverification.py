@@ -641,8 +641,8 @@ def decision_veri_samp(model, s0, s1, w_marg, samples, predicate, value, i0=0, d
     for i in trange(min(len(model.frequency), len(model.frequency)), desc="Checking Samples", bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'):
         loaded_weights = np.load(model.path_to_model+"/samples/sample_%s.npy"%(i), allow_pickle=True)
         model.model.set_weights(loaded_weights)
-        ol, ou = IBP_samp(model, s0, s0, loaded_weights, weight_margin=0.0, logits=True)
-        #print(value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
+        ol, ou = IBP_samp(model, s0, s1, loaded_weights, weight_margin=0.0, logits=True)
+        print("VALUE: ", value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou)))
         outval += model.frequency[i]  * value(np.squeeze(s0), np.squeeze(s1), np.squeeze(ol), np.squeeze(ou))
     print("Done with DecVeriHMC", outval)
     #print("Found %s safe intervals"%(len(safe_weights)))

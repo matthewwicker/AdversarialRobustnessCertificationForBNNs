@@ -89,8 +89,7 @@ def predicate_safe(iml, imu, ol, ou):
     else:
         return False
 
-# We should do clipping, but its 4am now and I am lazy
-
+#import time
 import json
 dir = "Logs"
 for eps in np.linspace(0.01, 0.2, 16):
@@ -98,13 +97,16 @@ for eps in np.linspace(0.01, 0.2, 16):
     img_upper = np.asarray([X_test[INDEX]+(input_range*eps)])
     img_lower = np.asarray([X_test[INDEX]-(input_range*eps)])
     # We start with epsilon = 0.0 and increase it as we go.
+    #start = time.time()
     p_lower = IBP_prob(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH)
+    #end = time.time()
+    #break
     print("~~~~~~~~~ Safety Probability: ", p_lower)
     if(p_lower < 0.5):
         break
 eps -= 0.01
 print("Radius: ", eps)
-
+#print("Time: ", end - start)
 #iterations = 0
 #record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":eps,  "Samples":SAMPLES, "Depth":MAXDEPTH}
 #with open("%s/%s_lower.log"%(dir, post_string), 'a') as f:

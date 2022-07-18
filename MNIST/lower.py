@@ -79,14 +79,20 @@ import json
 dir = "LogsVOGN"
 post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
 
+#import time
 for EPSILON in np.linspace(0.0, 0.5, 26):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
     img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+    #start = time.time()
     p_lower = prob_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH)
+    #end = time.time()
+    #break
+
     print("~~~~~~~~~ Safety Probability: ", p_lower)
     if(p_lower < 0.5):
         break
+#print("TIME: ", end - start)
 EPSILON -= 0.01
 print("Radius: ", eps)
 

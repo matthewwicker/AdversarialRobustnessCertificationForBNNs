@@ -105,8 +105,12 @@ for INDEX in range(0,10):
     img = np.asarray([X_test[INDEX]])
     img_upper = np.clip(np.asarray([X_test[INDEX]+(EPSILON)]), 0, 1)
     img_lower = np.clip(np.asarray([X_test[INDEX]-(EPSILON)]), 0, 1)
+    import time
+    start = time.time()
     p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
 
+    end = time.time()
+    print("TIME: ", end - start)
     record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
     with open("%s/%s"%(dir, post_string), 'a') as f:
         json.dump(record, f)
