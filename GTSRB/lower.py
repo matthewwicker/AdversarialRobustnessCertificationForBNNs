@@ -18,6 +18,7 @@ from tensorflow.keras.layers import *
 
 import numpy as np
 import argparse
+RUN_INDEX = 4
 parser = argparse.ArgumentParser()
 parser.add_argument("--imnum", default=0.0)
 parser.add_argument("--eps", default=0.0)
@@ -42,9 +43,9 @@ INDEX = imnum
 
 
 EPSILON = 1/255
-MARGIN = 4.0
-SAMPLES = 3
-MAXDEPTH = 3
+MARGIN = 3.85
+SAMPLES = 1
+MAXDEPTH = 1
 
 # 2.5, 750
 # LOAD IN THE DATA
@@ -86,19 +87,26 @@ def logit_value(iml, imu, ol, ou):
 import numpy as np
 # Load in approximate posterior distribution
 #bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))
-bayes_model = PosteriorModel("Posteriors/VOGN_small_Posterior_5")
+bayes_model = PosteriorModel("Posteriors/VOGN_small_Posterior_5_new")
 bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-for INDEX in range(0,10):
+for INDEX in range(RUN_INDEX*50,(RUN_INDEX+1)*50):
     # SELECT THE INPUT
     img = np.asarray([X_test[INDEX]])
-    #print(img.shape)
-    #sys.exit(0)
-    TRUE_VALUE = y_test[INDEX]
 
+    #print("OBSERVE: ")
+    TRUE_VALUE = y_test[INDEX]
+    #y_pred = bayes_model.predict(img)
+    #print(y_pred)
+    y_pred = np.argmax(bayes_model.predict(img))
+    #print(TRUE_VALUE, y_pred)
+    TRUE_VALUE = y_pred
+    #print(TRUE_VALUE)
+    #print(y_pred, TRUE_VALUE)
+    #continue
     import json
     dir = "ExperimentalLogs"
-    post_string = "%s_FCN_%s_%s_%s_%s_%s_lower.log"%(optim, width, depth, rob, lam, eps)
+    post_string = "PAPER_lower.log" #%(optim, width, depth, rob, lam, eps)
 
     #for EPSILON in np.linspace(0.0, 0.5, 26):
     #EPSILON = 1/255
@@ -108,13 +116,19 @@ for INDEX in range(0,10):
     import time
     start = time.time()
     p_lower = decision_veri(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
-
     end = time.time()
     print("TIME: ", end - start)
-    record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
-    with open("%s/%s"%(dir, post_string), 'a') as f:
-        json.dump(record, f)
-        f.write(os.linesep)
-
+    #record = {"Index":INDEX, "Lower":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH}
+    #with open("%s/%s"%(dir, post_string), 'a') as f:
+    #    json.dump(record, f)
+    #    f.write(os.linesep)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
+    print("PROB: ", p_lower)
 
 

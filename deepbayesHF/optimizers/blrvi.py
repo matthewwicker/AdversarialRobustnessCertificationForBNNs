@@ -77,8 +77,10 @@ class VariationalOnlineGuassNewton(optimizer.Optimizer):
             elif(int(self.robust_train) == 1):
                 #try:
                 logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, eps=self.epsilon)
-                v1 = tf.one_hot(labels, depth=self.classes); v1 = tf.cast(v1, dtype=tf.float32)
-                v2 = 1 - tf.one_hot(labels, depth=self.classes); v2 = tf.cast(v2, dtype=tf.float32)
+                v1 = labels #tf.one_hot(labels, depth=self.classes); 
+                v1 = tf.cast(v1, dtype=tf.float32)
+                v2 = 1 - labels #tf.one_hot(labels, depth=self.classes); 
+                v2 = tf.cast(v2, dtype=tf.float32)
                 logit_l, logit_u = tf.cast(logit_l, dtype=tf.float32), tf.cast(logit_u, dtype=tf.float32) 
                 worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
                 #except:
@@ -132,13 +134,13 @@ class VariationalOnlineGuassNewton(optimizer.Optimizer):
                 logit_l, logit_u = analyzers.IBP(self, features, self.model.trainable_variables, eps=self.epsilon)
                 logit_l = tf.cast(logit_l, dtype=tf.float32)
                 logit_u = tf.cast(logit_u, dtype=tf.float32)
-                v1 = tf.one_hot(labels, depth=self.classes)
-                v2 = 1 - tf.one_hot(labels, depth=self.classes)
+                v1 = labels #tf.one_hot(labels, depth=self.classes)
+                v2 = 1 - labels #tf.one_hot(labels, depth=self.classes)
                 v1 = tf.squeeze(v1); v2 = tf.squeeze(v2)
                 v1 = tf.cast(v1, dtype=tf.float32); v2 = tf.cast(v2,dtype=tf.float32)
                 worst_case = tf.math.add(tf.math.multiply(v2, logit_u), tf.math.multiply(v1, logit_l))
                 worst_case = self.model.layers[-1].activation(worst_case)
-                one_hot_cls = tf.one_hot(labels, depth=5)
+                #one_hot_cls = labels #tf.one_hot(labels, depth=5)
                 output = worst_case
                 loss = self.loss_func(labels, output)
 

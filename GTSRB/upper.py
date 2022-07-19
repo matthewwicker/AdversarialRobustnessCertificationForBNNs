@@ -44,10 +44,10 @@ INDEX = imnum
 
 
 EPSILON = 1/255
-MARGIN = 4.0
-SAMPLES = 3
-MAXDEPTH = 3
-
+MARGIN = 3.85
+SAMPLES = 1
+MAXDEPTH = 1
+benchmark = 'nonsense'
 # 2.5, 750
 # LOAD IN THE DATA
 
@@ -70,8 +70,8 @@ if(benchmark == 'gtsrb'):
     images = X_test
 elif(benchmark == 'random'):
     images = []
-    for i in range(10):
-        images.append(np.random.uniform(0,1,(28,28,3)))
+    for i in range(1000):
+        images.append(np.random.uniform(-0.5,0.5,(28,28,3)))
 else:
     benchmark = 'OOD/' + benchmark
     image_paths = [f for f in os.listdir(benchmark) if os.path.isfile(os.path.join(benchmark, f))]
@@ -107,32 +107,35 @@ def logit_value(iml, imu, ol, ou):
 import numpy as np
 # Load in approximate posterior distribution
 #bayes_model = PosteriorModel("Posteriors/%s_FCN_Posterior_%s_%s_%s_%s_%s"%(optim, width, depth, rob, lam, eps))
+#bayes_model = PosteriorModel("Posteriors/NA_small_Posterior_5")
 bayes_model = PosteriorModel("Posteriors/VOGN_small_Posterior_5")
 bayes_model.posterior_var += 0.000000001 # #nsuring 0s get rounded up to small values
 
-image = images[imnum]
-# SELECT THE INPUT
-img = np.asarray(image)
-img = img.astype('float32')
-y_pred = bayes_model.predict(np.asarray([img]))
-TRUE_VALUE = np.argmax(y_pred) #y_test[INDEX]
+for imnum in range(1, 100):
+    image = images[imnum]
+    # SELECT THE INPUT
+    img = np.asarray(image)
+    img = img.astype('float32')
+    y_pred = bayes_model.predict(np.asarray([img]))
+    TRUE_VALUE = np.argmax(y_pred) #y_test[INDEX]
 
-import json
-dir = "ExperimentalLogs"
-post_string = "%s_FCN_%s_%s_%s_%s_%s_upper.log"%(optim, width, depth, rob, lam, eps)
+    import json
+    dir = "ExperimentalLogs"
+    post_string = "PAPER_upper.log" #%(optim, width, depth, rob, lam, eps)
 
-EPSILON = 1/255
-img_upper = np.clip(np.asarray([img+(EPSILON)]), 0, 1)
-img_lower = np.clip(np.asarray([img-(EPSILON)]), 0, 1)
-p_lower = decision_veri_upper(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
-print("Computed Upper Bounds", p_lower)
 
-iterations = 0
-record = {"Index":INDEX, "Upper":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH, "Data":benchmark}
+    EPSILON = 1/255
+    img_upper = np.clip(np.asarray([img+(EPSILON)]), 0, 1)
+    img_lower = np.clip(np.asarray([img-(EPSILON)]), 0, 1)
+    p_lower = decision_veri_upper(bayes_model, img_lower, img_upper, MARGIN, SAMPLES, predicate=predicate_safe, depth=MAXDEPTH, value=logit_value)
+    print("Computed Upper Bounds", p_lower)
 
-with open("%s/%s"%(dir, post_string), 'a') as f:
-    json.dump(record, f)
-    f.write(os.linesep)
+    iterations = 0
+    record = {"Index":INDEX, "Upper":p_lower, "Samples":SAMPLES, "Margin":MARGIN, "MaxEps":EPSILON,  "Samples":SAMPLES, "Depth":MAXDEPTH, "Data":benchmark}
+
+    with open("%s/%s"%(dir, post_string), 'a') as f:
+        json.dump(record, f)
+        f.write(os.linesep)
 
 
 
