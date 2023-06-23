@@ -9,3 +9,5 @@ Code repository for the journal paper of the same name. This repository contains
 * Certification of uncertainty
 
 In addition, this repository contains experiments across all the datasets in the paper (ACAS, UCI, MNIST, GTSRB).
+
+![alt text](https://raw.githubusercontent.com/matthewwicker/ProbabilisticSafetyforBNNs/master/SimpleSafetyExample/Example.png)
