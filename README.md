@@ -1,9 +1,11 @@
-# IEEE Journal Code
+# Adversarial Robustness Certification for Bayesian Neural Networks
 
-Working Repository for Probabilistic Verification for Neural Networks. 
+Code repository for the journal paper of the same name. This repository contains all of the code and scripts to reproduce the experiments in the paper. This includes: 
 
-Includes: 
+* Training of BNNs with a variety of inference methods
+* Certification of probabilistic robustness for BNNs
+* Certification of decision robustness for BNNs
+* Certification for each property in classification and regression settings
+* Certification of uncertainty
 
--> Training of BNNs with a variety of inference methods
--> Statistical Verification of BNNs with novel methods presented in paper
-
+In addition, this repository contains experiments across all the datasets in the paper (ACAS, UCI, MNIST, GTSRB).
