@@ -10,5 +10,11 @@ Code repository for the journal paper of the same name. This repository contains
 
 In addition, this repository contains experiments across all the datasets in the paper (ACAS, UCI, MNIST, GTSRB).
 
-<img src="https://github.com/matthewwicker/AdversarialRobustnessCertificationForBNNs/blob/main/ExampleFig.png" width=50% height=50%>
+<p float="left">
+  <img src="https://github.com/matthewwicker/AdversarialRobustnessCertificationForBNNs/blob/main/ExampleFig.png" width=45% height=45%>
+  <img src="https://github.com/matthewwicker/AdversarialRobustnessCertificationForBNNs/blob/main/ElsaLogo.png" width=46% height=46%>
+</p>
+
+This work was partially funded by ELSA - European Lighthouse on Secure and Safe AI funded by the European Union
+under grant agreement number 101070617.
 
